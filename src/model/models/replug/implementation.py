@@ -41,7 +41,7 @@ class RePLUG(LLMModel):
         self.llm_model_name = self.config["Model"]["hf_model_name"]
         model_kwargs = dict(device_map = "auto", torch_dtype = torch.bfloat16, cache_dir= self.cache_dir,
                             load_in_8bit=load_in_8bit)
-        LFQA = PromptTemplate(prompt=self.prompt_template, output_parser=AnswerParser())
+        LFQA = PromptTemplate(prompt=self.zero_shot_prompt_template, output_parser=AnswerParser())
         PrompterModel = PromptModel(
             model_name_or_path= self.llm_model_name, use_gpu= True, invocation_layer_class=ReplugHFLocalInvocationLayer,
             model_kwargs= dict(
@@ -79,7 +79,20 @@ class RePLUG(LLMModel):
         record.predicted_answer = generated_answer.strip()
 
     @property
-    def prompt_template(self):
+    def zero_shot_prompt_template(self):
+        s = """Answer the Question to the best of your knowledge. 
+Attend to the provided context if it contains useful information.
+Do not mention the question or the provided context and just provide the answer.
+Your answer can only be an entity name or a short phrase.
+
+Context: ###REPLUG-DOC###
+
+Question: {query}
+Answer:"""
+        return "<s> [INST] " + s + " [/INST]" if "mixtral" in self.llm_model_name else s
+
+    @property
+    def few_shot_prompt_template(self):
         s = """Answer the Question to the best of your knowledge. 
 Attend to the provided context if it contains useful information.
 Do not mention the question or the provided context and just provide the answer.
