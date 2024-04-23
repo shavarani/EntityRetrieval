@@ -1,0 +1,8 @@
+tqdm
+numpy==1.26.4
+requests==2.31.0
+transformers==4.37.2
+torch==2.2.2
+farm-haystack[all]==1.25.2
+openai==0.27.6
+git+https://github.com/ehsk/OpenQA-eval.git
