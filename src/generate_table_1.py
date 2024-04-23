@@ -95,25 +95,23 @@ for split in ['dev']:
                 f1_values = [result['f1'] * 100 for result in results]
                 average_f1 = np.mean(f1_values)
                 std_dev_f1 = np.std(f1_values)
-                margin_of_error_f1 = 1.96 * (std_dev_f1 / np.sqrt(len(f1_values)))
-            
+                margin_of_error_f1 = 2.576 * (std_dev_f1 / np.sqrt(len(f1_values)))
                 exact_match_values = [result['exact_match'] * 100 for result in results]
                 average_exact_match = np.mean(exact_match_values)
                 std_dev_exact_match = np.std(exact_match_values)
-                margin_of_error_exact_match = 1.96 * (std_dev_exact_match / np.sqrt(len(exact_match_values)))
-                
+                margin_of_error_exact_match = 2.576 * (std_dev_exact_match / np.sqrt(len(exact_match_values)))
                 printing_line += f" & {average_exact_match:.1f}$\\pm${margin_of_error_exact_match:.1f} & {average_f1:.1f}$\\pm${margin_of_error_f1:.1f} " 
             if results[0]['accuracy'] != 'N/A':
                 accuracy_values = [result['accuracy'] for result in results]
                 average_accuracy = np.mean(accuracy_values)
                 std_dev_accuracy = np.std(accuracy_values)
-                margin_of_error_accuracy = 1.96 * (std_dev_accuracy / np.sqrt(len(accuracy_values)))
+                margin_of_error_accuracy = 2.576 * (std_dev_accuracy / np.sqrt(len(accuracy_values)))
                 print(f"Accuracy: {average_accuracy:.2f}±{margin_of_error_accuracy:.2f}")
             if results[0]['invalid_count'] != 'N/A':
                 invalid_count_values = [result['invalid_count'] for result in results]
                 average_invalid_count = np.mean(invalid_count_values)
                 std_dev_invalid_count = np.std(invalid_count_values)
-                margin_of_error_invalid_count = 1.96 * (std_dev_invalid_count / np.sqrt(len(invalid_count_values)))
+                margin_of_error_invalid_count = 2.576 * (std_dev_invalid_count / np.sqrt(len(invalid_count_values)))
                 print(f"Invalid Count: {average_invalid_count:.2f}±{margin_of_error_invalid_count:.2f}")
         printing_line += " & - & - \\\\"
         print(printing_line)
