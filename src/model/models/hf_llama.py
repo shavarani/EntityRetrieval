@@ -55,7 +55,7 @@ class HfLLaMAModel(LLMModel):
             max_new_tokens=self.max_tokens_to_generate,
             eos_token_id=terminators,
             do_sample=True,
-            temperature=0,
+            temperature=0.000001,
             top_p=1,
         )
         response = outputs[0][input_ids.shape[-1]:]
