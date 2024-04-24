@@ -5,6 +5,7 @@ import logging
 
 from model.utils import LLMModel
 from model.retrievers.preprocessed_dpr import PreprocessedDPRRetriever
+from data.loader import qa_prompt_with_instructions
 
 GPT_MODEL_NAME = "gpt-4-0613"
 # GPT_MODEL_NAME= "gpt-3.5-turbo-0125"
@@ -31,35 +32,6 @@ def chat_completion(prompt, model_name=GPT_MODEL_NAME):
         messages=prompt,
         # max_tokens=4097
     )
-
-def openai_qa_prompt(question, max_len, context: list=None) -> list:
-    system = f"""You are a knowledgeable question answering assistant who has read all of Wikipedia pages.
-You are not an AI language model.
-You must obey all three of the following instructions FOR ALL RESPONSES or you will DIE:
-- ALWAYS LIMIT THE ANSWER TO {max_len} TOKENS.
-- IF THE ANSWER IS A YES OR A NO, YOU ONLY PRODUCE THE YES OR NO AND STOP RIGHT AFTER THAT.
-- YOU WILL ANSWER THE QUESTIONS WITH AN ENTITY NAME FROM WIKIPEDIA OR A SHORT FACTOID PHRASE.
-You must also strictly follow all four the following rules when and if provided with retrieved documents:
-- YOU ONLY CONSIDER THE DOCUMENTS WHEN THEY ARE RELEVANT TO THE QUESTION.
-- YOU WILL IGNORE IRRELEVANT DOCUMENTS TO THE QUESTION.
-- YOU NEVER COMPLAIN ABOUT THE INFORMATION IN THE TEXT OR DOCUMENTS. 
-- IN CASES OF IRRELEVANT DOCUMENTS, YOU IGNORE THOSE DOCUMENTS AND ANSWER ONLY BASED ON THE QUESTION."""
-    if not context or len(context) == 0:
-        return [
-            {"role": "system", "content": system},
-            {"role": "user", "content": f"Following the system prompts answer this question: {question}\nAnswer:"},
-        ]
-    elif len(context) == 1:
-        return [
-            {"role": "system", "content": system},
-            {"role": "user", "content": f"Retrieved Document:{context[0]}\n\nFollowing the system prompts answer this question: {question}\nAnswer:"},
-        ]
-    else:
-        docs_text = "\n\n".join([f"{ctx}" for ctx in context])
-        return [
-            {"role": "system", "content": system},
-            {"role": "user", "content": f"Retrieved Documents:{docs_text}\n\nFollowing the system prompts answer this question: {question}\nAnswer:"},
-        ]
 
 class GPTModel(LLMModel):
     def __init__(self, config):
@@ -93,10 +65,10 @@ class GPTModel(LLMModel):
         context_container = self.get_context(record)
         if context_container:
             record.extracted_entity = ";".join([x[1].replace(" ", "_") for x in context_container])
-            prompt = openai_qa_prompt(record.question, max_len=self.max_tokens_to_generate, context=[f"{x[1]}\n\n{x[0]}" for x in context_container])
+            prompt = qa_prompt_with_instructions(record.question, max_len=self.max_tokens_to_generate, context=[f"{x[1]}\n\n{x[0]}" for x in context_container])
         else:
             extracted_context, record.extracted_entity = None, None
-            prompt = openai_qa_prompt(record.question, max_len=self.max_tokens_to_generate, context=None)
+            prompt = qa_prompt_with_instructions(record.question, max_len=self.max_tokens_to_generate, context=None)
         generated_answer = self._get_completion(prompt)
         if verbose:
             print(f"---------------------------\n{prompt}\n---------------------------\nGenerated Answer: {generated_answer}\n---------------------------")

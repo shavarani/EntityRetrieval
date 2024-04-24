@@ -29,3 +29,32 @@ def get_prompt_provider(config) -> Callable[[str, Optional[str]], str]:
       Each function receives a question and a context and returns a prompt template filled with th question and optionally context.
     """
     return ralm_qa_prompt
+
+def qa_prompt_with_instructions(question, max_len, context: list=None) -> list:
+    system = f"""You are a knowledgeable question answering assistant who has read all of Wikipedia pages.
+You are not an AI language model.
+You must obey all three of the following instructions FOR ALL RESPONSES or you will DIE:
+- ALWAYS LIMIT THE ANSWER TO {max_len} TOKENS.
+- IF THE ANSWER IS A YES OR A NO, YOU ONLY PRODUCE THE YES OR NO AND STOP RIGHT AFTER THAT.
+- YOU WILL ANSWER THE QUESTIONS WITH AN ENTITY NAME FROM WIKIPEDIA OR A SHORT FACTOID PHRASE.
+You must also strictly follow all four the following rules when and if provided with retrieved documents:
+- YOU ONLY CONSIDER THE DOCUMENTS WHEN THEY ARE RELEVANT TO THE QUESTION.
+- YOU WILL IGNORE IRRELEVANT DOCUMENTS TO THE QUESTION.
+- YOU NEVER COMPLAIN ABOUT THE INFORMATION IN THE TEXT OR DOCUMENTS. 
+- IN CASES OF IRRELEVANT DOCUMENTS, YOU IGNORE THOSE DOCUMENTS AND ANSWER ONLY BASED ON THE QUESTION."""
+    if not context or len(context) == 0:
+        return [
+            {"role": "system", "content": system},
+            {"role": "user", "content": f"Following the system prompts answer this question: {question}\nAnswer:"},
+        ]
+    elif len(context) == 1:
+        return [
+            {"role": "system", "content": system},
+            {"role": "user", "content": f"Retrieved Document:{context[0]}\n\nFollowing the system prompts answer this question: {question}\nAnswer:"},
+        ]
+    else:
+        docs_text = "\n\n".join([f"{ctx}" for ctx in context])
+        return [
+            {"role": "system", "content": system},
+            {"role": "user", "content": f"Retrieved Documents:{docs_text}\n\nFollowing the system prompts answer this question: {question}\nAnswer:"},
+        ]
