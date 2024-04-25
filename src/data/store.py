@@ -7,7 +7,7 @@ class StoreResult:
         dataset_name = config['Dataset']['name'].lower()
         model_type = config['Model']['name'].lower()
         dataset_split = config['Dataset']['split'].lower()
-        if model_type == 'hfllm':
+        if model_type == 'hfllm' or model_type == 'hfllama':
             hf_model_name = config["Model"]["hf_model_name"].split("/")[-1]
             use_retriever = config["Model.Retriever"]["use_retriever"].lower() == 'true'
             quantized = config["Model"]["hf_llm_load_in_8bit"].lower() == 'true'
