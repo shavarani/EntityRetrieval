@@ -3,6 +3,7 @@ from typing import Callable, Optional
 from data.loaders.utils import QADataset
 from data.loaders.sqa import StrategyQA
 from data.loaders.fqa import FactoidQA
+from data.loaders.eqs import EntityQuestions
 
 def get_dataset(config) -> QADataset:
     dataset_name = config['Dataset']['name']
@@ -10,6 +11,8 @@ def get_dataset(config) -> QADataset:
         return FactoidQA(config)
     elif dataset_name == "STRATEGYQA":
         return StrategyQA(config)
+    elif dataset_name == "EntityQuestions":
+        return EntityQuestions(config)
     else:
         raise ValueError(f"Unknown dataset: {dataset_name}")
 
