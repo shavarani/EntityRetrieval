@@ -19,7 +19,7 @@ def read_configs_from_args(args):
     default_config = {
         'Dataset': {'name': 'FACTOIDQA', 'split': 'dev'}, 
         'Model': {'name': 'HFLLM', 'hf_model_name': 'TinyLlama/TinyLlama-1.1B-step-50K-105b', 'hf_max_tokens_to_generate': '10', 'hf_llm_load_in_8bit': 'False'}, 
-        'Model.Retriever': {'use_retriever': 'False', 'retriever_top_k': '4', 'dpr_index_type': 'exact', 'dpr_question_model': 'single-nq', 'dpr_k_size': '100'}, 
+        'Model.Retriever': {'type': 'dpr', 'use_retriever': 'False', 'retriever_top_k': '4', 'dpr_index_type': 'exact', 'dpr_question_model': 'single-nq', 'dpr_k_size': '100'},
         'Experiment': {'name': 'experiment description', 'summarize_results': 'False', 'verbose_logging': 'False', 'perform_annotation': 'False'}, 
         'Evaluate': {'experimental_results_path': '../results/Table1/', 'evaluate_rouge': 'False', 'evaluate_bem': 'False', 'perform_evaluation': 'True'}
         }
@@ -39,6 +39,8 @@ def read_configs_from_args(args):
                 config['Model']['hf_max_tokens_to_generate'] = value
             elif key == 'hf-llm-load-in-8bit':
                 config['Model']['hf_llm_load_in_8bit'] = value
+            elif key == 'retriever-type':
+                config['Model.Retriever']['type'] = value
             elif key == 'use-retriever':
                 config['Model.Retriever']['use_retriever'] = value
             elif key == 'retriever-top-k':
