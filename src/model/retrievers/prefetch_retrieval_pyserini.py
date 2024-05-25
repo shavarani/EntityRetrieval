@@ -92,7 +92,7 @@ class PrefetchRetrievalDocuments:
         self.retriever_type = config["Model.Retriever"]["type"]
         self.checkpoint_path = config["Experiment"]["checkpoint_path"]
         self.k = int(config['Model.Retriever']['retriever_top_k'])
-        os.environ["PYSERINI_CACHE"] = f'{self.checkpoint_path}/pyserini_indexes/'
+        os.environ["PYSERINI_CACHE"] = self.checkpoint_path
         self.searcher = instantiate_retriever(self.retriever_type)
 
     def _get_raw(self, element):
