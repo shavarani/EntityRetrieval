@@ -3,6 +3,8 @@
 This repository contains the implementation and the experiments from our paper 
 "Entity Retrieval: Entity Linking for Answering Entity-Centric Questions", currently under review for EMNLP 2024.
 
+<p align="center" width="100%"><img src="DPRvsER.png" width="92%" alt="DPR vs. Entity Retrieval"></p>
+
 ## Quick Start
 
 The implemented source code is stored under `src` directory. 
