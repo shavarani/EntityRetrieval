@@ -70,7 +70,7 @@ def text_has_answer(answers, text) -> bool:
     return False
 
 def parse_args():
-    _path = pathlib.Path(os.path.abspath(__file__)).parent.parent.parent / '..' / '.checkpoints' / 'pyserini_indexes'
+    _path = pathlib.Path(os.path.abspath(__file__)).parent.parent.parent / '..' / '.checkpoints'
     parser = argparse.ArgumentParser(description="Script to prefetch retrieval documents")
     parser.add_argument("--dataset",     type=str, help="Name of the dataset", default='FACTOIDQA')
     parser.add_argument("--split",       type=str, help="Split of the dataset", default="train")
@@ -92,7 +92,7 @@ class PrefetchRetrievalDocuments:
         self.retriever_type = config["Model.Retriever"]["type"]
         self.checkpoint_path = config["Experiment"]["checkpoint_path"]
         self.k = int(config['Model.Retriever']['retriever_top_k'])
-        os.environ["PYSERINI_CACHE"] = self.checkpoint_path
+        os.environ["PYSERINI_CACHE"] = self.checkpoint_path / 'pyserini_indexes'
         self.searcher = instantiate_retriever(self.retriever_type)
 
     def _get_raw(self, element):
