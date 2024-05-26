@@ -64,7 +64,7 @@ class PreprocessedDPRRetriever(BaseRetriever):
         config.read_dict({
             'Dataset': {'name' : 'STRATEGYQA', 'split': 'dev'},
             'Experiment': {'checkpoint_path': 'src/entity_linking/.checkpoints/'},
-            'Model.Retriever': {'dpr_index_type': 'exact', 'dpr_question_model': 'single-nq', 'dpr_k_size': '100'}
+            'Model.Retriever': {'dpr_index_type': 'exact', 'dpr_question_model': 'single-nq', 'prefetched_k_size': '100'}
         })
         ctxt = PreprocessedDPRRetriever(config).fetch_dpr_context(question)
     """
@@ -77,7 +77,7 @@ class PreprocessedDPRRetriever(BaseRetriever):
             dataset_name = "FSQ"
         index_type = config["Model.Retriever"]["dpr_index_type"] # compressed or exact
         question_model_name = config["Model.Retriever"]["dpr_question_model"] # single-nq or multiset or in_context_ralm
-        k_size = int(config["Model.Retriever"]["dpr_k_size"])
+        k_size = int(config["Model.Retriever"]["prefetched_k_size"])
         self.preprocessed_file_name = f"{dataset_name}_{index_type}_{question_model_name}_{k_size}.zip"
         if question_model_name == "in_context_ralm" and dataset_name in ["TRIVIAQA", "NQ"] and config["Dataset"]["split"] == 'dev':
             self.preprocessed_file_name = f"{dataset_name}_dev_only_in_context_ralm_20.zip"

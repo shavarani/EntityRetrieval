@@ -19,7 +19,7 @@ def read_configs_from_args(args):
     default_config = {
         'Dataset': {'name': 'FACTOIDQA', 'split': 'dev'}, 
         'Model': {'name': 'HFLLM', 'hf_model_name': 'TinyLlama/TinyLlama-1.1B-step-50K-105b', 'hf_max_tokens_to_generate': '10', 'hf_llm_load_in_8bit': 'False'}, 
-        'Model.Retriever': {'type': 'dpr', 'use_retriever': 'False', 'retriever_top_k': '4', 'dpr_index_type': 'exact', 'dpr_question_model': 'single-nq', 'dpr_k_size': '100'},
+        'Model.Retriever': {'type': 'dpr', 'use_retriever': 'False', 'retriever_top_k': '4', 'dpr_index_type': 'exact', 'dpr_question_model': 'single-nq', 'prefetched_k_size': '100'},
         'Experiment': {'name': 'experiment description', 'summarize_results': 'False', 'verbose_logging': 'False', 'perform_annotation': 'False'}, 
         'Evaluate': {'experimental_results_path': '../results/Table1/', 'evaluate_rouge': 'False', 'evaluate_bem': 'False', 'perform_evaluation': 'True'}
         }
@@ -50,7 +50,7 @@ def read_configs_from_args(args):
             elif key == 'dpr-question-model':
                 config['Model.Retriever']['dpr_question_model'] = value
             elif key == 'dpr-k-size':
-                config['Model.Retriever']['dpr_k_size'] = value
+                config['Model.Retriever']['prefetched_k_size'] = value
             elif key == 'experiment-name':
                 config['Experiment']['name'] = value
             elif key == 'summarize-results':
