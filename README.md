@@ -24,3 +24,4 @@ stores them for re-use in experiments. You may use the same script with slight m
 passage repositories for your newly added datasets. Please note that the underlying implementation for these processes
 uses [PySerini](https://github.com/castorini/pyserini) and loads pre-built FAISS indexes for dense retrieval techniques. Such processes can require up to 65GBs
 of main memory and about the same amount of available disk storage to download and store the index.
+You may use run [`analyze_prefetched_documents.py`](src/model/retrievers/analyze_prefetched_documents.py) to create retrieval coverage analysis plots.
