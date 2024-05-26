@@ -1,13 +1,11 @@
 """
-The main objective of implementation of this class is to cope with the hardware complexities of loading a DPR retriever
+The main objective of implementation of this class is to cope with the hardware complexities of loading a retriever
  trained over the entire Wikipedia while experimenting on Question Answering experiments.
-For this we have abstracted the retrieval process by caching the top-k highly ranked documents in huggingface's
- wiki_dpr data (https://huggingface.co/datasets/wiki_dpr) for each question in all of our supported QA datasets.
-wiki_dpr contains 21_015_300 wikipedia articles from the dump of Dec. 20, 2018, chunked and split into non-overlapping
- text blocks of size 100 words. The pre-created dataset can come with two different FAISS indexes one 'compressed' (less
-  accurate but lighter) and one 'exact' (more accurate but more memory demanding). We have run our dumping script
-   in src/data/scripts/create_dpr_context_all.sh using both index types and have stored the created dump URLS in
-    PREPROCESSED_URLS. You can create the dumps for newly implemented datasets using the same script.
+For this, we abstract the retrieval process by caching the top-k highly ranked documents for each question in each of
+our supported QA datasets. We use the pre-built indexes in pyserini which are built using the 21_015_325 wikipedia
+ passages (non-overlapping text blocks of size 100 words) in https://dl.fbaipublicfiles.com/dpr/wikipedia_split/psgs_w100.tsv.gz .
+We have run our dumping script in src/prefetch_retrieval_documents.sh and have stored the created dump URLS in PREPROCESSED_URLS.
+You can create the dumps for newly implemented datasets using the same script.
 """
 from typing import List, Optional, Union, Dict
 import json
@@ -19,15 +17,17 @@ from haystack.document_stores import BaseDocumentStore
 from haystack.schema import FilterType
 from data.loaders.utils import download_public_file, DatasetSplit
 
+# in the following oracle and spel retriever types refer to documents that are collected as the first 100 words of the
+#  wikipedia articles of the salient entities in questions which have either been gold annotated (oracle) or identified
+#   using spel entity linking method (spel).
 PREPROCESSED_URLS = {
-    "FACTOIDQA_exact_single-nq_100.zip":       "ETyE2KbMjsZJgEUDN-fFagQBraZoazON2tumbrBkYAfoKg?e=fd0Q1i",
-    "FACTOIDQA_oracle_wiki_first_100_words.zip":"EaFkI0ecTM1As54ocMo5BFEBLBRsa7k1iWdQc3bpcrgEKA?e=afVrfM",
-    "FACTOIDQA_spel_wiki_first_100_words.zip": "EaMFthYtZYtDn4GovmztYRcBDzBS3gac5ZqC4GlfTyPlpw?e=exwjKi",
-    "STRATEGYQA_exact_single-nq_100.zip":      "Ecp8nr50lUVBrGCX9xR550oBY8T9VdJWo19CoZgwSMDasA?e=gnw8Tg",
-    "STRATEGYQA_spel_wiki_first_100_words.zip":"EdiDKQSjTY5EkPD3LqzJD8UBnLF8Fn4_AGl3Xru9gZWIeA?e=zXVnrX",
+    "FACTOIDQA_oracle_varying.zip":"EaFkI0ecTM1As54ocMo5BFEBLBRsa7k1iWdQc3bpcrgEKA?e=afVrfM",
+
+    "FACTOIDQA_spel_varying.zip":  "EaMFthYtZYtDn4GovmztYRcBDzBS3gac5ZqC4GlfTyPlpw?e=exwjKi",
+    "STRATEGYQA_spel_varying.zip": "EdiDKQSjTY5EkPD3LqzJD8UBnLF8Fn4_AGl3Xru9gZWIeA?e=zXVnrX",
 }
 
-class DPRContext:
+class RetrievedContext:
     def __init__(self):
         self.id = None
         self.rank = None
@@ -38,7 +38,7 @@ class DPRContext:
 
     @staticmethod
     def convert(record):
-        self = DPRContext()
+        self = RetrievedContext()
         self.id = record['id']
         self.rank = record['rank']
         self.title = record['title']
@@ -56,43 +56,20 @@ class DPRContext:
         return Document(id=self.id, content=self.text, meta={'rank': self.rank, 'title': self.title,
                                                              'score': str(self.score), 'has_answer': self.has_answer})
 
-class PreprocessedDPRRetriever(BaseRetriever):
-    """
-    How to test this retriever:
-        import configparser
-        config = configparser.ConfigParser()
-        config.read_dict({
-            'Dataset': {'name' : 'STRATEGYQA', 'split': 'dev'},
-            'Experiment': {'checkpoint_path': 'src/entity_linking/.checkpoints/'},
-            'Model.Retriever': {'dpr_index_type': 'exact', 'dpr_question_model': 'single-nq', 'prefetched_k_size': '100'}
-        })
-        ctxt = PreprocessedDPRRetriever(config).fetch_dpr_context(question)
-    """
+class PrefetchedDocumentRetriever(BaseRetriever):
     def __init__(self, config):
         super().__init__()
         dataset_name = config['Dataset']['name']
-        if dataset_name in ["NQ", "NQSimplified", "NaturalQuestions"]:
-            dataset_name = "NQ"
-        if dataset_name in ["FSQ", "FrequentSimpleQuestions"]:
-            dataset_name = "FSQ"
-        index_type = config["Model.Retriever"]["dpr_index_type"] # compressed or exact
-        question_model_name = config["Model.Retriever"]["dpr_question_model"] # single-nq or multiset or in_context_ralm
+        retriever_type = config["Model.Retriever"]["type"]
         k_size = int(config["Model.Retriever"]["prefetched_k_size"])
-        self.preprocessed_file_name = f"{dataset_name}_{index_type}_{question_model_name}_{k_size}.zip"
-        if question_model_name == "in_context_ralm" and dataset_name in ["TRIVIAQA", "NQ"] and config["Dataset"]["split"] == 'dev':
-            self.preprocessed_file_name = f"{dataset_name}_dev_only_in_context_ralm_20.zip"
-        elif question_model_name == "in_context_ralm":
-            raise ValueError("InContext RALM preprocessed data unavailable for DPR configuration setting ("
-                             f"{index_type}/{question_model_name}/{k_size}/{dataset_name})")
-        elif question_model_name == "spel_wiki_first_100_words":
-            self.preprocessed_file_name = f"{dataset_name}_spel_wiki_first_100_words.zip"
-        elif question_model_name == "oracle_wiki_first_100_words":
-            self.preprocessed_file_name = f"{dataset_name}_oracle_wiki_first_100_words.zip"
+        if retriever_type in ['spel', 'oracle']:
+            k_size = 'varying' # the maximum number of documents depends on the number of salient entities in question.
+        self.preprocessed_file_name = f"{dataset_name}_{retriever_type}_{k_size}.zip"
         if self.preprocessed_file_name in PREPROCESSED_URLS:
             _url = PREPROCESSED_URLS[self.preprocessed_file_name]
         else:
-            raise ValueError(f"Invalid preprocessed DPR configuration setting ("
-                             f"{index_type}/{question_model_name}/{k_size}) for {dataset_name}")
+            raise ValueError(
+                f"Invalid prefetched retriever configuration setting ({retriever_type}/{k_size}) for {dataset_name}!")
         self.dataset_url = f"https://1sfu-my.sharepoint.com/:u:/g/personal/sshavara_sfu_ca/{_url}&download=1"
         self.checkpoint_path = config["Experiment"]["checkpoint_path"]
         download_public_file(self.dataset_url, f"{self.checkpoint_path}/{self.preprocessed_file_name}")
@@ -100,11 +77,25 @@ class PreprocessedDPRRetriever(BaseRetriever):
         self.dataset_name = dataset_name
         self.lookup_lines = self.scan_data_file()
 
+    @property
+    def current_file(self):
+        if self.dataset_name == "FACTOIDQA":
+            return "data.jsonl"
+        if self.split == DatasetSplit.TRAIN:
+            return "train.jsonl"
+        elif self.split == DatasetSplit.DEV:
+            return "dev.jsonl"
+        elif self.split == DatasetSplit.TEST:
+            return "test.jsonl"
+        else:
+            raise ValueError(f"Invalid split {self.split}")
+
     def scan_data_file(self):
         """
         loads the questions along with their line number in the downloaded file into a dictionary.
         """
-        print(f'Scanning/Indexing the cached DPR retrieved documents in {self.preprocessed_file_name} jsonl file [{self.split.value} split] ...')
+        print(f'Scanning/Indexing prefetched retrieval documents in {self.preprocessed_file_name} jsonl file '
+              f'[{self.split.value} split] ...')
         newline_positions_in_file = []
         tmp_dict = dict()
         _lines = dict()
@@ -122,25 +113,14 @@ class PreprocessedDPRRetriever(BaseRetriever):
             _lines[tmp_dict[obj_ind]] = obj
         return _lines
 
-    def fetch_dpr_context(self, question: str):
+    def fetch_documents(self, question: str):
         if question not in self.lookup_lines:
             return []
         with ZipFile(f"{self.checkpoint_path}/{self.preprocessed_file_name}", 'r') as zip_ref:
             with zip_ref.open(self.current_file) as bigFile:
                 bigFile.seek(self.lookup_lines[question])
                 json_line = bigFile.readline().strip()
-                return [DPRContext.convert(x).retriever_document for x in json.loads(json_line)['context']]
-
-    @property
-    def current_file(self):
-        if self.dataset_name == "FACTOIDQA":
-            return "data.jsonl"
-        if self.split == DatasetSplit.TRAIN:
-            return "train.jsonl"
-        elif self.split == DatasetSplit.DEV:
-            return "dev.jsonl"
-        else:
-            raise ValueError(f"Invalid split {self.split}")
+                return [RetrievedContext.convert(x).retriever_document for x in json.loads(json_line)['context']]
 
     def retrieve(self,
                  query: str,
@@ -150,7 +130,7 @@ class PreprocessedDPRRetriever(BaseRetriever):
                  headers: Optional[Dict[str, str]] = None,
                  scale_score: Optional[bool] = None,
                  document_store: Optional[BaseDocumentStore] = None) -> List[Document]:
-        return self.fetch_dpr_context(query)[:top_k]
+        return self.fetch_documents(query)[:top_k]
 
     def retrieve_batch(self,
                        queries: List[str],
@@ -161,4 +141,4 @@ class PreprocessedDPRRetriever(BaseRetriever):
                        batch_size: Optional[int] = None,
                        scale_score: Optional[bool] = None,
                        document_store: Optional[BaseDocumentStore] = None) -> List[List[Document]]:
-        return [self.fetch_dpr_context(query)[:top_k] for query in queries]
+        return [self.fetch_documents(query)[:top_k] for query in queries]
