@@ -31,12 +31,14 @@ try:
 except Exception:
     LuceneSearcher, FaissSearcher, DprQueryEncoder = None, None, None
 
-def instantiate_retriever(retriever_type):
+DEVICE = 'cuda'
+
+def instantiate_retriever(retriever_type, device):
     if retriever_type == "bm25":
         return LuceneSearcher.from_prebuilt_index('wikipedia-dpr-100w')
     elif retriever_type == "dpr":
         return FaissSearcher.from_prebuilt_index('wikipedia-dpr-100w.dpr-multi',
-                                                 DprQueryEncoder('facebook/dpr-question_encoder-multiset-base'))
+                                                 DprQueryEncoder('facebook/dpr-question_encoder-multiset-base', device=device))
     else:
         raise ValueError(f'Retriever: {retriever_type} not available!')
 
@@ -93,7 +95,7 @@ class PrefetchRetrievalDocuments:
         self.checkpoint_path = config["Experiment"]["checkpoint_path"]
         self.k = int(config['Model.Retriever']['retriever_top_k'])
         os.environ["PYSERINI_CACHE"] = self.checkpoint_path
-        self.searcher = instantiate_retriever(self.retriever_type)
+        self.searcher = instantiate_retriever(self.retriever_type, device=DEVICE)
 
     def _get_raw(self, element):
         if self.retriever_type == "bm25":
