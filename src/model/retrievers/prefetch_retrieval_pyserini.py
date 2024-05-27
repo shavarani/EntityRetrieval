@@ -35,12 +35,14 @@ DEVICE = 'cuda'
 
 def instantiate_retriever(retriever_type, device):
     if retriever_type == "bm25":
-        return LuceneSearcher.from_prebuilt_index('wikipedia-dpr-100w')
+        encoder = None
+        searcher = LuceneSearcher.from_prebuilt_index('wikipedia-dpr-100w')
     elif retriever_type == "dpr":
-        return FaissSearcher.from_prebuilt_index('wikipedia-dpr-100w.dpr-multi',
-                                                 DprQueryEncoder('facebook/dpr-question_encoder-multiset-base', device=device))
+        encoder = DprQueryEncoder('facebook/dpr-question_encoder-multiset-base', device=device)
+        searcher = FaissSearcher.from_prebuilt_index('wikipedia-dpr-100w.dpr-multi', encoder)
     else:
         raise ValueError(f'Retriever: {retriever_type} not available!')
+    return encoder, searcher
 
 def normalize_answer(s):
     def remove_articles(text):
@@ -95,7 +97,7 @@ class PrefetchRetrievalDocuments:
         self.checkpoint_path = config["Experiment"]["checkpoint_path"]
         self.k = int(config['Model.Retriever']['retriever_top_k'])
         os.environ["PYSERINI_CACHE"] = self.checkpoint_path
-        self.searcher = instantiate_retriever(self.retriever_type, device=DEVICE)
+        self.encoder, self.searcher = instantiate_retriever(self.retriever_type, device=DEVICE)
 
     def _get_raw(self, element):
         if self.retriever_type == "bm25":
