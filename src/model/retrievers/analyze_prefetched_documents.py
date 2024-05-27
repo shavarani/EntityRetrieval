@@ -33,10 +33,10 @@ def parse_args():
     })
     return config
 
-def create_plot(dataset, split, retriever_type, retriever_prefetched_k_size, dataset_length):
+def create_plot(dataset_name, split, retriever_type, retriever_prefetched_k_size, dataset_length):
     cfg = configparser.ConfigParser()
     cfg.read_dict({
-        'Dataset': {'name' : dataset, 'split': split},
+        'Dataset': {'name' : dataset_name, 'split': split},
         'Model.Retriever': {'type': retriever_type, 'prefetched_k_size': retriever_prefetched_k_size},
         'Experiment': {'checkpoint_path': pathlib.Path(os.path.abspath(__file__)).parent.parent.parent / '..' / '.checkpoints'}
     })
@@ -63,7 +63,7 @@ def create_plot(dataset, split, retriever_type, retriever_prefetched_k_size, dat
     ax1.bar(x, y, label='Frequency')
     ax1.set_yscale('log')
     ax1.set_ylabel('Count of Questions (log scale)')
-    ax1.set_title(f'{dataset}-{split}-{retriever_type}')
+    ax1.set_title(f'{dataset_name}-{split}-{retriever_type}')
     ax1.grid(True, which='both', linestyle='--', linewidth=0.5)
     ax2.plot(x, cumulative_y, marker='.', color='black', label='Cumulative')
     ax2.set_xlabel('Index of the retrieved document where first hit identified')
@@ -71,8 +71,8 @@ def create_plot(dataset, split, retriever_type, retriever_prefetched_k_size, dat
     ax2.grid(True, which='both', linestyle='--', linewidth=0.5)
     ax2.yaxis.set_major_formatter(FuncFormatter(lambda y, _: f'{y:.0f}%'))
     plt.tight_layout()
-    plt.savefig(f'retrieval_coverage_{dataset}_{split}_{retriever_type}.png')
-    with open(f'retrieval_coverage_data_{dataset}_{split}_{retriever_type}.json', 'w') as f:
+    plt.savefig(f'retrieval_coverage_{dataset_name}_{split}_{retriever_type}.png')
+    with open(f'retrieval_coverage_data_{dataset_name}_{split}_{retriever_type}.json', 'w') as f:
         json.dump(dict(retrieval_counter), f)
 
 if __name__ == '__main__':
