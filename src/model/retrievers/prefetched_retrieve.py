@@ -31,6 +31,8 @@ PREPROCESSED_URLS = {
     "FACTOIDQA_bm25_100.zip":      "EROATmeR6QNEvCARa8VlG2cBo7COMpnvTsOm6yHRRnkLFQ?e=5QnQTX",
 
     "FACTOIDQA_dpr_100.zip":       "EU5_xn4t5GtBnt0ILQ0XvNoBegTeWSoVuCnZRJgmkDMQvQ?e=gDzAkQ",
+    "STRATEGYQA_dpr_100.zip":      "EW_na-RgHm1EgrHu3Mo8kDYBlUqG3rLnEqkgctHU8g5Xcw?e=gPJiXB",
+    "EntityQuestions_dpr_100.zip": "ESQe7GXHCkdOkaXJ2ud12jMBYrHlo3wCGZssYVoS8ba6Yg?e=3QZqMs",
 }
 
 class RetrievedContext:
