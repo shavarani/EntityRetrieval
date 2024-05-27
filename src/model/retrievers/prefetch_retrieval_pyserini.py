@@ -118,10 +118,49 @@ class PrefetchRetrievalDocuments:
              'score': str(element.score), 'has_answer': text_has_answer(answer_aliases, passage)})
         return results
 
+    def fetch_batch_documents(self, batch_question_answers, threads):
+        assert self.encoder is not None
+        batch_questions = [x[0] for x in batch_question_answers]
+        batch_answers = [x[1] for x in batch_question_answers]
+
+        input_ids = self.encoder.tokenizer(batch_questions, return_tensors='pt', padding=True, truncation=True)
+        input_ids.to(DEVICE)
+        encoded_queries = self.encoder.model(input_ids["input_ids"]).pooler_output.detach().cpu().numpy()
+        all_hits = self.searcher.batch_search(encoded_queries, q_ids=[str(i) for i, _ in enumerate(batch_questions)], k=self.k, threads=threads)
+        all_results = []
+        for hits, answer_aliases in zip(all_hits.values(), batch_answers):
+            _results_ = []
+            for i in range(0, self.k):
+                element = hits[i]
+                passage = json.loads(self._get_raw(element))['contents']
+                title = passage.split("\n")[0]
+                _results_.append({'id': element.docid,'rank': i + 1, 'title': title, 'text': passage,
+                                'score': str(element.score), 'has_answer': text_has_answer(answer_aliases, passage)})
+            all_results.append(_results_)
+        return all_results, batch_questions
+
 if __name__ == '__main__':
+    # TODO get these in configs
+    batch_size = 512
+    threads_count = 32
     cfg = parse_args()
     dataset = get_dataset(cfg)
     retriever = PrefetchRetrievalDocuments(cfg)
     with jsonlines.open(cfg['Experiment']['output_file'], mode='w') as writer:
-        for e in tqdm(dataset):
-            writer.write({"question": e.question, "context": retriever.fetch_documents(e.question, e.answer_aliases)})
+        if cfg["Model.Retriever"]["type"] == "bm25":
+            for e in tqdm(dataset):
+                writer.write({"question": e.question, "context": retriever.fetch_documents(e.question, e.answer_aliases)})
+        else:
+            batch = []
+            for item in tqdm(dataset):
+                if len(batch) < batch_size:
+                    batch.append((item.question, item.answer_aliases))
+                else:
+                    all_res, bq = retriever.fetch_batch_documents(batch, threads=threads_count)
+                    for r, q in zip(all_res, bq):
+                        writer.write({"question": q, "context": r})
+                    del batch[:]
+            if batch:
+                all_res, bq = retriever.fetch_batch_documents(batch, threads=threads_count)
+                for r, q in zip(all_res, bq):
+                    writer.write({"question": q, "context": r})
