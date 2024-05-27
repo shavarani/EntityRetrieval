@@ -27,9 +27,9 @@ from data.loader import get_dataset
 
 try:
     from pyserini.search.lucene import LuceneSearcher
-    from pyserini.search.faiss import FaissSearcher, DprQueryEncoder
+    from pyserini.search.faiss import FaissSearcher, DprQueryEncoder, AnceQueryEncoder
 except Exception:
-    LuceneSearcher, FaissSearcher, DprQueryEncoder = None, None, None
+    LuceneSearcher, FaissSearcher, DprQueryEncoder, AnceQueryEncoder = None, None, None, None
 
 DEVICE = 'cuda'
 
@@ -40,6 +40,9 @@ def instantiate_retriever(retriever_type, device):
     elif retriever_type == "dpr":
         encoder = DprQueryEncoder('facebook/dpr-question_encoder-multiset-base', device=device)
         searcher = FaissSearcher.from_prebuilt_index('wikipedia-dpr-100w.dpr-multi', encoder)
+    elif retriever_type == "ance":
+        encoder = AnceQueryEncoder('castorini/ance-dpr-question-multi', device=device)
+        searcher = FaissSearcher.from_prebuilt_index('wikipedia-dpr-100w.ance-multi', encoder)
     else:
         raise ValueError(f'Retriever: {retriever_type} not available!')
     return encoder, searcher
@@ -102,7 +105,7 @@ class PrefetchRetrievalDocuments:
     def _get_raw(self, element):
         if self.retriever_type == "bm25":
             return element.raw
-        elif self.retriever_type == "dpr":
+        elif self.retriever_type in ["dpr", "ance"]:
             return self.searcher.doc(element.docid).raw()
         else:
             raise ValueError(f'Retriever: {self.retriever_type} not available!')
