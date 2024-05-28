@@ -33,6 +33,10 @@ PREPROCESSED_URLS = {
     "FACTOIDQA_dpr_100.zip":       "EU5_xn4t5GtBnt0ILQ0XvNoBegTeWSoVuCnZRJgmkDMQvQ?e=gDzAkQ",
     "STRATEGYQA_dpr_100.zip":      "EW_na-RgHm1EgrHu3Mo8kDYBlUqG3rLnEqkgctHU8g5Xcw?e=gPJiXB",
     "EntityQuestions_dpr_100.zip": "ESQe7GXHCkdOkaXJ2ud12jMBYrHlo3wCGZssYVoS8ba6Yg?e=3QZqMs",
+
+    "FACTOIDQA_ance_100.zip":      "EbKI_eVgO4xBr_C0EXcwhb8B1AzsO8NwcD8YRXTneGzI3g?e=aXkRaj",
+    "STRATEGYQA_ance_100.zip":     "EVFRT42kD61BiEsu_SQyN0gBx2w42ecd0XdQhKOK6AC4KQ?e=FQT0gL",
+    "EntityQuestions_ance_100.zip":"EYkXjrFO5JtDgBNjUWUHkR4BmRli974Upx3wO_dQ0vgHjA?e=h7oU3b",
 }
 
 class RetrievedContext:
