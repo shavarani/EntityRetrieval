@@ -11,9 +11,34 @@ from tqdm import tqdm
 from collections import Counter
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
+import numpy as np
 
 from data.loader import get_dataset
 from model.retrievers.prefetched_retrieve import PrefetchedDocumentRetriever
+
+class NDCG:
+    @staticmethod
+    def dcg_at_k(r, k):
+        r = np.asfarray(r)[:k]
+        if r.size:
+            return np.sum((2**r - 1) / np.log2(np.arange(2, r.size + 2)))
+        return 0.
+
+    @staticmethod
+    def ndcg_at_k(r, k):
+        k = min(len(r), k)
+        dcg_max = NDCG.dcg_at_k(sorted(r, reverse=True), k)
+        if not dcg_max:
+            return 0.
+        return NDCG.dcg_at_k(r, k) / dcg_max
+
+    @staticmethod
+    def score(relevance_scores_list, num_docs=100):
+        ndcg_scores = []
+        for relevance_scores in relevance_scores_list:
+            ndcg_score = NDCG.ndcg_at_k(relevance_scores, num_docs)
+            ndcg_scores.append(ndcg_score)
+        return np.mean(ndcg_scores)
 
 # The following function is not currently use in this script
 def parse_args():
@@ -33,6 +58,23 @@ def parse_args():
     })
     return config
 
+def first_non_zero_index(arr):
+    for index, value in enumerate(arr):
+        if value != 0:
+            return index
+    return -1
+
+def calculate_mrr(reciprocal_ranks):
+    total_queries = len(reciprocal_ranks)
+    total_rr = 0
+    for rr in reciprocal_ranks:
+        if rr == 0:
+            total_rr += 0
+        else:
+            total_rr += 1 / rr
+    mrr = total_rr / total_queries
+    return mrr
+
 def create_plot(dataset_name, split, retriever_type, retriever_prefetched_k_size, dataset_length):
     cfg = configparser.ConfigParser()
     cfg.read_dict({
@@ -46,14 +88,28 @@ def create_plot(dataset_name, split, retriever_type, retriever_prefetched_k_size
     # retrieval accuracy = percentage of retrieved passages that contain the answer.
     retrieval_counter = Counter()
     print('Collecting retrieval coverage data ...')
-    for item in tqdm(dataset):
+    relevance_scores_array = np.zeros((dataset_length, max_k), dtype=int)
+    reciprocal_ranks = []
+    for item_idx, item in enumerate(tqdm(dataset)):
         r = retriever.retrieve(query=item.question, top_k=max_k)
-        for coverage in range(1, max_k+2):
-            if any([x.meta['has_answer'] for x in r[:coverage]]):
-                break
-        if coverage < max_k + 1:
+        if r:
+            relevance_scores = [int(x.meta['has_answer']) for x in r]
+            relevance_scores_array[item_idx] = relevance_scores
+            coverage = first_non_zero_index(relevance_scores) + 1
+        else:
+            coverage = 0
+        reciprocal_ranks.append(coverage)
+        if 0 < coverage < max_k + 1:
             retrieval_counter[coverage] += 1
-
+    relevance_scores_list = relevance_scores_array.tolist()
+    print('='*120)
+    print(f'Calculating scores for {dataset_name}/{split}/{retriever_type}:')
+    print('='*120)
+    for k in [5, 20, max_k]:
+        ndcg_score = NDCG.score(relevance_scores_list, k)
+        print(f"NDCG@{k}: {ndcg_score:.4f}")
+    # Mean Reciprocal Rank
+    print(f"MRR: {calculate_mrr(reciprocal_ranks):.4f}")
     data = sorted(retrieval_counter.items(), key=lambda x:x[0])
     x  = [i[0] for i in data]
     y = [i[1] for i in data]
@@ -78,7 +134,7 @@ def create_plot(dataset_name, split, retriever_type, retriever_prefetched_k_size
 if __name__ == '__main__':
     dataset_configurations = [('FACTOIDQA', 'train', 2203), ('STRATEGYQA', 'train', 2290), ('STRATEGYQA', 'dev', 2821),
                               ('EntityQuestions', 'dev', 22068), ('EntityQuestions', 'test', 22075)]
-    retriever_configurations = [('bm25', 100)]
+    retriever_configurations = [('bm25', 100), ('dpr', 100)]
     for _dataset_, _split_, _dataset_length_ in dataset_configurations:
         for _retriever_type_, _retriever_prefetched_k_size_ in retriever_configurations:
             create_plot(_dataset_, _split_, _retriever_type_, _retriever_prefetched_k_size_, _dataset_length_)
