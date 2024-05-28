@@ -105,10 +105,20 @@ def create_plot(dataset_name, split, retriever_type, retriever_prefetched_k_size
     print('='*120)
     print(f'Calculating scores for {dataset_name}/{split}/{retriever_type}:')
     print('='*120)
+    # Top-k Retrieval Accuracy as reported in https://aclanthology.org/2021.emnlp-main.496.pdf
+    #  Top-K Retrieval Accuracy = \frac{\text{Number of queries with at least one relevant document in the top } k \text{ results}}{\text{Total number of queries}}
+    # nDCG@k: nDCG@k (normalized Discounted Cumulative Gain at rank k) evaluates the quality of a ranking system by
+    #  considering both the relevance and the position of documents in the top k results.
+    #  It calculates the Discounted Cumulative Gain (DCG@k) by summing the relevance scores of documents, weighted by
+    #  their position in the ranking. This score is then normalized by dividing it by the Ideal Discounted Cumulative
+    #  Gain (IDCG@k), which represents the best possible ranking of documents. The resulting nDCG@k value ranges from 0
+    #  to 1, where 1 indicates a perfect ranking with the most relevant documents appearing at the top.
     for k in [5, 20, max_k]:
         ndcg_score = NDCG.score(relevance_scores_list, k)
         print(f"NDCG@{k}: {ndcg_score:.4f}")
-    # Mean Reciprocal Rank
+        raatk = sum([retrieval_counter[x] for x in range(1, k+1)]) * 100. / dataset_length
+        print(f"RAcc@{k}: {raatk:.2f}")
+    # Mean Reciprocal Rank: the average of the reciprocal ranks of the first relevant document for each query
     print(f"MRR: {calculate_mrr(reciprocal_ranks):.4f}")
     data = sorted(retrieval_counter.items(), key=lambda x:x[0])
     x  = [i[0] for i in data]
