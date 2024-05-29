@@ -11,3 +11,4 @@ accelerate==0.29.3
 timeout_decorator==0.5.0
 torchdata==0.7.1
 torchtext==0.17.2
+mosestokenizer==1.2.1
