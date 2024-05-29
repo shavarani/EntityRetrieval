@@ -19,9 +19,12 @@ able to run all the experiments with the new dataset flawlessly.
 ### How to create pre-fetched retrieval repositories
 As mentioned in the paper, we treat document retrieval as a pre-processing step, caching the most relevant passages 
 for each question - considering different retrieval techniques - before conducting the question answering experiments.
-[`prefetch_retrieval_documents.sh`](src/prefetch_retrieval_documents.sh) located directly under `src` directory, creates all such pre-fetched passages and 
+[`prefetch_pyserini_retrieval_documents.sh`](src/prefetch_pyserini_retrieval_documents.sh) located directly under `src` directory, creates all such pre-fetched passages and 
 stores them for re-use in experiments. You may use the same script with slight modifications for creating pre-processed
 passage repositories for your newly added datasets. Please note that the underlying implementation for these processes
 uses [PySerini](https://github.com/castorini/pyserini) and loads pre-built FAISS indexes for dense retrieval techniques. Such processes can require up to 65GBs
 of main memory and about the same amount of available disk storage to download and store the index.
+
+For entity retrieval prefetched documents, you may follow the same procedure using [`prefetch_entity_retrieval_documents.sh`](src/prefetch_entity_retrieval_documents.sh).
+
 You may use run [`analyze_prefetched_documents.py`](src/model/retrievers/analyze_prefetched_documents.py) to create retrieval coverage analysis plots.
