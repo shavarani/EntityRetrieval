@@ -4,6 +4,7 @@ This file is a connector which loads SpEL and performs annotation using its pret
 import sys
 import os
 sys.path.insert(0, os.path.abspath('../../spel/src'))
+sys.path.insert(0, os.path.abspath('spel/src'))
 from timeout_decorator.timeout_decorator import TimeoutError
 from spel.src.spel.model import SpELAnnotator, dl_sa, tokenizer
 from spel.src.spel.span_annotation import WordAnnotation, PhraseAnnotation

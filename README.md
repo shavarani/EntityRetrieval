@@ -25,6 +25,7 @@ passage repositories for your newly added datasets. Please note that the underly
 uses [PySerini](https://github.com/castorini/pyserini) and loads pre-built FAISS indexes for dense retrieval techniques. Such processes can require up to 65GBs
 of main memory and about the same amount of available disk storage to download and store the index.
 
-For entity retrieval prefetched documents, you may follow the same procedure using [`prefetch_entity_retrieval_documents.sh`](src/prefetch_entity_retrieval_documents.sh).
+For entity retrieval prefetched documents, you may follow the same procedure using [`prefetch_entity_retrieval_documents.sh`](src/prefetch_entity_retrieval_documents.sh). 
+Please remember to instantiate the entity linker directory using `git submodule update --init --recursive` before running this script.
 
 You may use run [`analyze_prefetched_documents.py`](src/model/retrievers/analyze_prefetched_documents.py) to create retrieval coverage analysis plots.
