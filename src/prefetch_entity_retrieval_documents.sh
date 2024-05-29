@@ -2,6 +2,7 @@ datasets=('FACTOIDQA' 'STRATEGYQA' 'EntityQuestions')
 splits=('train' 'dev' 'test')
 types=('spel')
 k=100
+echo 'roberta-large' > base_model.cfg
 
 for dataset in "${datasets[@]}"; do
     for split in "${splits[@]}"; do
@@ -20,3 +21,4 @@ for dataset in "${datasets[@]}"; do
         done
     done
 done
+rm base_model.cfg
