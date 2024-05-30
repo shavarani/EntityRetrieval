@@ -77,10 +77,8 @@ class PrefetchedDocumentRetriever(BaseRetriever):
     def __init__(self, config):
         super().__init__()
         dataset_name = config['Dataset']['name']
-        retriever_type = config["Model.Retriever"]["type"]
+        retriever_type = config["Model.Retriever"]["type"].lower()
         k_size = int(config["Model.Retriever"]["prefetched_k_size"])
-        if retriever_type in ['spel', 'oracle']:
-            k_size = 'varying' # the maximum number of documents depends on the number of salient entities in question.
         self.preprocessed_file_name = f"{dataset_name}_{retriever_type}_{k_size}.zip"
         if self.preprocessed_file_name in PREPROCESSED_URLS:
             _url = PREPROCESSED_URLS[self.preprocessed_file_name]
