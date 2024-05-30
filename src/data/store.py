@@ -13,7 +13,7 @@ class StoreResult:
             quantized = config["Model"]["hf_llm_load_in_8bit"].lower() == 'true'
             top_k = config["Model.Retriever"]["retriever_top_k"]
             max_gen = config["Model"]["hf_max_tokens_to_generate"]
-            experiment_desc = f'open_book_{retriever_type}_topk_{top_k}' if retriever_type.lower() == 'none' else 'closed_book'
+            experiment_desc = f'open_book_{retriever_type}_topk_{top_k}' if retriever_type.lower() != 'none' else 'closed_book'
             qant = '_8bitq' if quantized else ''
             experiment_desc =experiment_desc + f'_{hf_model_name}{qant}_max_gen_{max_gen}'
         elif model_type == 'replug':
