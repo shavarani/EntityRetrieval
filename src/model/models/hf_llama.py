@@ -25,7 +25,8 @@ class HfLLaMAModel(LLMModel):
         self.tokenizer = AutoTokenizer.from_pretrained(self.hf_model_name)
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
-        self.use_retriever = config["Model.Retriever"]["use_retriever"].lower() == 'true'
+        self.retriever_type = config["Model.Retriever"]["type"]
+        self.use_retriever = self.retriever_type.lower() != 'none'
         self._retriever = PrefetchedDocumentRetriever(config) if self.use_retriever else None
         self.top_k = int(config["Model.Retriever"]["retriever_top_k"]) if self.use_retriever else 0
         print('*********** Loaded Configurations *****************')
@@ -35,7 +36,7 @@ class HfLLaMAModel(LLMModel):
         print(f'* Loaded prompt provider: {qa_prompt_with_instructions.__name__.upper()}')
         print(f"* {'Open' if self.use_retriever else 'Closed'}-book retrieval mode")
         if self.use_retriever:
-            print(f'* Open-book retrieval using top \"{self.top_k}\" DPR cached/fetched documents!')
+            print(f'* Open-book retrieval using {self.retriever_type} retriever with top \"{self.top_k}\" pre-fetched documents!')
         print('***************************************************')
 
     def _get_completion(self, prompt):
