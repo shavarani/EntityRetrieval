@@ -27,6 +27,10 @@ PREPROCESSED_URLS = {
     "STRATEGYQA_spel_100.zip":     "Ec9cgZkpoPZCsyeu3TdZdHcBZfNdT75U0p9ib-koJ0xNNQ?e=NX6Sim",
     "EntityQuestions_spel_100.zip":"EfV5sD_GeZRGg_FT5NB_GtkBbBJoaSDjfkDqORbQypzVZQ?e=8txeYd",
 
+    "FACTOIDQA_spel_50.zip":       "Ea8Q7Q1gJFVFp4qec5Hei44B-OQ0sm0NmGb3NtDav2pAcQ?e=jPyz8h",
+    "STRATEGYQA_spel_50.zip":      "EYRlB2OE8z9Hn1mta7auyMMB_ASPba4MrMNOX7KNHmEFMA?e=zcie0q",
+    "EntityQuestions_spel_50.zip": "Ed16EwYMGw1OqFZcJlBkaWoB1IA5fdiUmb9byHsKmkRIXA?e=P1snjk",
+
     "EntityQuestions_bm25_100.zip":"EdpGpxLIy-NLkfvQ0eurplwBroLsQFsfQs_hjrN2FrJp9g?e=OocWX3",
     "STRATEGYQA_bm25_100.zip":     "EVMmR908BepNssLfP8sFXacBbDFQHVpBUrr62MOtJYGVIQ?e=78Ahsv",
     "FACTOIDQA_bm25_100.zip":      "EROATmeR6QNEvCARa8VlG2cBo7COMpnvTsOm6yHRRnkLFQ?e=5QnQTX",
