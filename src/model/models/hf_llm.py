@@ -22,10 +22,10 @@ class HfLLMModel(LLMModel):
         load_in_8bit = config["Model"]["hf_llm_load_in_8bit"].lower() == 'true'
         self.model = AutoModelForCausalLM.from_pretrained(self.hf_model_name, cache_dir=self.cache_dir, load_in_8bit=load_in_8bit,
                                                           device_map="auto", low_cpu_mem_usage=True).eval()
-        if "llama" in self.hf_model_name:
-            self.tokenizer = LlamaTokenizer.from_pretrained(self.hf_model_name)
-        else:
-            self.tokenizer = AutoTokenizer.from_pretrained(self.hf_model_name)
+        #if "llama" in self.hf_model_name:
+        #    self.tokenizer = LlamaTokenizer.from_pretrained(self.hf_model_name)
+        #else:
+        self.tokenizer = AutoTokenizer.from_pretrained(self.hf_model_name)
 
         self.prompter = get_prompt_provider(config)
         self.retriever_type = config["Model.Retriever"]["type"]
