@@ -94,6 +94,7 @@ def create_plot(dataset_name, split, retriever_type, retriever_prefetched_k_size
         r = retriever.retrieve(query=item.question, top_k=max_k)
         if r:
             relevance_scores = [int(x.meta['has_answer']) for x in r]
+            relevance_scores += [0] * (max_k - len(relevance_scores))
             relevance_scores_array[item_idx] = relevance_scores
             coverage = first_non_zero_index(relevance_scores) + 1
         else:
