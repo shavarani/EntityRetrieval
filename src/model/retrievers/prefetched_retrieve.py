@@ -23,6 +23,10 @@ from data.loaders.utils import download_public_file, DatasetSplit
 PREPROCESSED_URLS = {
     "FACTOIDQA_oracle_varying.zip":"EaFkI0ecTM1As54ocMo5BFEBLBRsa7k1iWdQc3bpcrgEKA?e=afVrfM",
 
+    "FACTOIDQA_spel_300.zip":      "EZQRBRVLoMNKt3UgSHV_grsBJjYSkC4J3dZmGuIQteJU5g?e=5cdBhW",
+    "STRATEGYQA_spel_300.zip":     "ESBFwjbNdjFAhOsGyHTEYaABni_Rw8jQhlv-ieyPPIChTA?e=OBYnFR",
+    "EntityQuestions_spel_300.zip":"ETmxNl47QPhKvTj9QmbTfkMBkHeoAqa0eVi7mmtdpis8kQ?e=Jjd441",
+
     "FACTOIDQA_spel_100.zip":      "EUWeCRoFFmFIuNrxcGzLTWsBMpz8F0vcoPA_PVXF4JSRHQ?e=R5gjBQ",
     "STRATEGYQA_spel_100.zip":     "Ec9cgZkpoPZCsyeu3TdZdHcBZfNdT75U0p9ib-koJ0xNNQ?e=NX6Sim",
     "EntityQuestions_spel_100.zip":"EfV5sD_GeZRGg_FT5NB_GtkBbBJoaSDjfkDqORbQypzVZQ?e=8txeYd",
