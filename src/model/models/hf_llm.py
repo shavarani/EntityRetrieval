@@ -1,5 +1,5 @@
 import torch
-from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, LlamaTokenizer
+from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer #, LlamaTokenizer
 
 from model.utils import LLMModel
 from model.retrievers.prefetched_retrieve import PrefetchedDocumentRetriever
