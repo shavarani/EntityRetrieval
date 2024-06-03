@@ -5,6 +5,7 @@ import logging
 
 from model.utils import LLMModel
 from model.retrievers.prefetched_retrieve import PrefetchedDocumentRetriever
+from model.retrievers.fast_prefetched_retrieve import FastPrefetchedDocumentRetriever
 from data.loader import qa_prompt_with_instructions
 
 GPT_MODEL_NAME = "gpt-4-0613"
@@ -38,9 +39,16 @@ class GPTModel(LLMModel):
         self.config = config
         self.checkpoint_path = self.config["Experiment"]["checkpoint_path"]
         self.retriever_type = config["Model.Retriever"]["type"]
+        retriever_load_in_memory = config['Model.Retriever']['load_in_memory'].lower() == 'true'
         self.use_retriever = self.retriever_type.lower() != 'none'
-        self._retriever = PrefetchedDocumentRetriever(config) if self.use_retriever else None
         self.top_k = int(config["Model.Retriever"]["retriever_top_k"]) if self.use_retriever else 0
+        if retriever_load_in_memory and self.use_retriever:
+            self._retriever = FastPrefetchedDocumentRetriever(config, topk=self.top_k)
+        elif self.use_retriever:
+            self._retriever = PrefetchedDocumentRetriever(config)
+        else:
+            self._retriever = None
+
         self.max_tokens_to_generate=int(self.config["Model"]["hf_max_tokens_to_generate"])
 
     def _get_completion(self, prompt):

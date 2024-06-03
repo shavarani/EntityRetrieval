@@ -3,6 +3,7 @@ from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer #, Llam
 
 from model.utils import LLMModel
 from model.retrievers.prefetched_retrieve import PrefetchedDocumentRetriever
+from model.retrievers.fast_prefetched_retrieve import FastPrefetchedDocumentRetriever
 from data.loader import get_prompt_provider
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -29,9 +30,16 @@ class HfLLMModel(LLMModel):
 
         self.prompter = get_prompt_provider(config)
         self.retriever_type = config["Model.Retriever"]["type"]
+        retriever_load_in_memory = config['Model.Retriever']['load_in_memory'].lower() == 'true'
         self.use_retriever = self.retriever_type.lower() != 'none'
-        self._retriever = PrefetchedDocumentRetriever(config) if self.use_retriever else None
         self.top_k = int(config["Model.Retriever"]["retriever_top_k"]) if self.use_retriever else 0
+        if retriever_load_in_memory and self.use_retriever:
+            self._retriever = FastPrefetchedDocumentRetriever(config, topk=self.top_k)
+        elif self.use_retriever:
+            self._retriever = PrefetchedDocumentRetriever(config)
+        else:
+            self._retriever = None
+
         print('*********** Loaded Configurations *****************')
         li8b = '(8-bit quantized)' if load_in_8bit else '(non-quantized)'
         print(f'* Loaded model name: {self.hf_model_name} {li8b}')
