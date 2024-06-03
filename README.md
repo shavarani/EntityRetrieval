@@ -16,6 +16,31 @@ important functions to be implemented are `__iter__` and `__next__`. The `__next
 `data.loaders.utils.QARecord`. Once implemented add the new dataset to `data.loader.get_dataset` and you should be 
 able to run all the experiments with the new dataset flawlessly.
 
+#### Creation of the selected EntityQuestions dataset
+We have used the following script to create the selected EntityQuestions dataset which we have used in the paper:
+
+```python
+import json
+from zipfile import ZipFile
+from model.entity_linking.spel_vocab_to_wikipedia import SpELVocab2Wikipedia
+lookup_index = SpELVocab2Wikipedia()
+zip_ref = ZipFile("entity_questions.zip", 'r')
+for c_file in ["train.jsonl", "dev.jsonl", "test.jsonl"]:
+    data = zip_ref.open(c_file)
+    with open(c_file, 'w') as f:
+        selected_size = 0
+        all_size = 0
+        for line in data:
+            record = json.loads(line)
+            entity = record['entity'].replace(' ', '_')
+            all_size += 1
+            if entity in lookup_index.spel_vocab2wikipedia_lines:
+                f.write(f"{json.dumps(record)}\n")
+                selected_size += 1
+        print(f"Selected {selected_size} out of {all_size} from {c_file}")    
+zip_ref.close()
+```
+
 ### How to create pre-fetched retrieval repositories
 As mentioned in the paper, we treat document retrieval as a pre-processing step, caching the most relevant passages 
 for each question - considering different retrieval techniques - before conducting the question answering experiments.
