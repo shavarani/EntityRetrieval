@@ -8,11 +8,15 @@ class EntityQuestions(QADataset):
         The dataset instance expert in loading and serving the EntityQuestions dataset with data files from:
          https://aclanthology.org/2021.emnlp-main.496.pdf
     """
-    def __init__(self, config) -> None:
-        _url = "EdPEdLlFu7hEltetjFLbIFkBw936g-3ty-1UZtJ_Ej1TsA?e=JNHw9q"
+    def __init__(self, config, load_selected_questions=True) -> None:
+        if load_selected_questions:
+            _url = "ER1H-msJSo9AoTMJ5u0xeaIBgLiMAq-4GwMglGLNjigMWQ?e=on3rYg"
+            self.dataset_zip_file = f"selected_entity_questions.zip"
+        else:
+            _url = "EdPEdLlFu7hEltetjFLbIFkBw936g-3ty-1UZtJ_Ej1TsA?e=JNHw9q"
+            self.dataset_zip_file = f"entity_questions.zip"
         self.dataset_url = f"https://1sfu-my.sharepoint.com/:u:/g/personal/sshavara_sfu_ca/{_url}&download=1"
         self.checkpoint_path = config["Experiment"]["checkpoint_path"]
-        self.dataset_zip_file = f"entity_questions.zip"
         download_public_file(self.dataset_url, f"{self.checkpoint_path}/{self.dataset_zip_file}")
         self.split = DatasetSplit.from_str(config["Dataset"]["split"])
         self.data = None
