@@ -24,8 +24,8 @@ PREPROCESSED_URLS = {
     "FACTOIDQA_oracle_varying.zip":"EaFkI0ecTM1As54ocMo5BFEBLBRsa7k1iWdQc3bpcrgEKA?e=afVrfM",
 
     "FACTOIDQA_spel_1000.zip":      "EfdJnq020bJFrdBWX1wackIBA3pSfDgmrCByzQT4zcViNA?e=6crgde",
-    "STRATEGYQA_spel_1000.zip":     "EZZWyUI7LERAsyZbHXB7nZMB6tGYEfzc3c3EwIdT04H7mw?e=BPJgdQ",
-    "EntityQuestions_spel_1000.zip":"EWgyN1g6jBxLk56KwecT_JABgF7RvUgiMlG7OWFk8t_u4g?e=8jVAm2",
+    "STRATEGYQA_spel_1000.zip":     "EWgyN1g6jBxLk56KwecT_JABgF7RvUgiMlG7OWFk8t_u4g?e=8jVAm2",
+    "EntityQuestions_spel_1000.zip":"EZZWyUI7LERAsyZbHXB7nZMB6tGYEfzc3c3EwIdT04H7mw?e=BPJgdQ",
 
     "FACTOIDQA_spel_300.zip":      "EZQRBRVLoMNKt3UgSHV_grsBJjYSkC4J3dZmGuIQteJU5g?e=5cdBhW",
     "STRATEGYQA_spel_300.zip":     "ESBFwjbNdjFAhOsGyHTEYaABni_Rw8jQhlv-ieyPPIChTA?e=OBYnFR",
