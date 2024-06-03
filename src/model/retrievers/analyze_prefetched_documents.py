@@ -114,9 +114,10 @@ def create_plot(dataset_name, split, retriever_type, retriever_prefetched_k_size
     #  their position in the ranking. This score is then normalized by dividing it by the Ideal Discounted Cumulative
     #  Gain (IDCG@k), which represents the best possible ranking of documents. The resulting nDCG@k value ranges from 0
     #  to 1, where 1 indicates a perfect ranking with the most relevant documents appearing at the top.
-    for k in [5, 20, max_k]:
+    for k in [1, 2, 3, 4, 5, 20, max_k]:
         ndcg_score = NDCG.score(relevance_scores_list, k)
         print(f"NDCG@{k}: {ndcg_score:.4f}")
+    for k in [1, 2, 3, 4, 5, 20, max_k]:
         raatk = sum([retrieval_counter[x] for x in range(1, k+1)]) * 100. / dataset_length
         print(f"RAcc@{k}: {raatk:.2f}")
     # Mean Reciprocal Rank: the average of the reciprocal ranks of the first relevant document for each query
