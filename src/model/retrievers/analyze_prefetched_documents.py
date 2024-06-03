@@ -15,6 +15,7 @@ import numpy as np
 
 from data.loader import get_dataset
 from model.retrievers.prefetched_retrieve import PrefetchedDocumentRetriever
+from model.retrievers.fast_prefetched_retrieve import FastPrefetchedDocumentRetriever
 
 class NDCG:
     @staticmethod
@@ -75,7 +76,7 @@ def calculate_mrr(reciprocal_ranks):
     mrr = total_rr / total_queries
     return mrr
 
-def create_plot(dataset_name, split, retriever_type, retriever_prefetched_k_size, dataset_length):
+def create_plot(dataset_name, split, retriever_type, retriever_prefetched_k_size, dataset_length, use_fast_retriever=True):
     cfg = configparser.ConfigParser()
     cfg.read_dict({
         'Dataset': {'name' : dataset_name, 'split': split},
@@ -83,8 +84,11 @@ def create_plot(dataset_name, split, retriever_type, retriever_prefetched_k_size
         'Experiment': {'checkpoint_path': pathlib.Path(os.path.abspath(__file__)).parent.parent.parent / '..' / '.checkpoints'}
     })
     dataset = get_dataset(cfg)
-    retriever = PrefetchedDocumentRetriever(cfg)
     max_k = int(cfg["Model.Retriever"]["prefetched_k_size"])
+    if use_fast_retriever:
+        retriever = FastPrefetchedDocumentRetriever(cfg, topk=max_k)
+    else:
+        retriever = PrefetchedDocumentRetriever(cfg)
     # retrieval accuracy = percentage of retrieved passages that contain the answer.
     retrieval_counter = Counter()
     print('Collecting retrieval coverage data ...')
