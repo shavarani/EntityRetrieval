@@ -145,8 +145,8 @@ def create_plot(dataset_name, split, retriever_type, retriever_prefetched_k_size
 
 if __name__ == '__main__':
     dataset_configurations = [('FACTOIDQA', 'train', 2203), ('STRATEGYQA', 'train', 2290), ('STRATEGYQA', 'dev', 2821),
-                              ('EntityQuestions', 'dev', 22068), ('EntityQuestions', 'test', 22075)]
-    retriever_configurations = [('bm25', 100), ('dpr', 100), ('ance', 100), ('dkrr', 100), ('spel', 100), ('spel', 50), ('spel', 300)]
+                              ('EntityQuestions', 'dev', 4710), ('EntityQuestions', 'test', 4741)]
+    retriever_configurations = [('bm25', 100), ('dpr', 100), ('ance', 100), ('dkrr', 100), ('spel', 50), ('spel', 100), ('spel', 300)]
     for _dataset_, _split_, _dataset_length_ in dataset_configurations:
         for _retriever_type_, _retriever_prefetched_k_size_ in retriever_configurations:
             create_plot(_dataset_, _split_, _retriever_type_, _retriever_prefetched_k_size_, _dataset_length_)
