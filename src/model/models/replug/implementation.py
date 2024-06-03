@@ -34,7 +34,7 @@ class RePLUG(LLMModel):
         self.retriever_top_k = int(config["Model.Retriever"]["retriever_top_k"])
         self.reranker_top_k = reranker_top_k
         load_in_8bit = config["Model"]["hf_llm_load_in_8bit"].lower() == 'true'
-
+        print('WARNING! the PrefetchedDocumentRetriever object in this class can benefit from the in-memory FastPrefetchedDocumentRetriever speed-ups.')
         self.retriever = PrefetchedDocumentRetriever(self.config)
         if rerank_retrieved:
             sbert_path = "cross-encoder/ms-marco-MiniLM-L-6-v2"
