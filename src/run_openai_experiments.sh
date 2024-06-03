@@ -15,7 +15,7 @@ for experiment in "${experiments[@]}"; do
             continue
           fi
 
-          python3.10 main.py dataset-name="${dataset}" dataset-split="${split}" model-type=OpenAI retriever-type="${retriever_type}" hf-max-tokens-to-generate="${max_tokens_to_generate}" retriever-top-k="${retriever_top_k}" experiment-name="${experiment}-${retriever_type}" prefetched-k-size=100 verbose-logging=False perform-annotation=True perform-evaluation=False
+          python3.10 main.py dataset-name="${dataset}" dataset-split="${split}" model-type=OpenAI retriever-type="${retriever_type}" hf-max-tokens-to-generate="${max_tokens_to_generate}" retriever-top-k="${retriever_top_k}" experiment-name="${experiment}-${retriever_type}" prefetched-k-size=100 verbose-logging=False perform-annotation=True perform-evaluation=False retriever-load-in-memory=True
 
       done
     done
