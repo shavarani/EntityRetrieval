@@ -13,7 +13,8 @@ class StoreResult:
             quantized = config["Model"]["hf_llm_load_in_8bit"].lower() == 'true'
             top_k = config["Model.Retriever"]["retriever_top_k"]
             max_gen = config["Model"]["hf_max_tokens_to_generate"]
-            experiment_desc = f'open_book_{retriever_type}_topk_{top_k}' if retriever_type.lower() != 'none' else 'closed_book'
+            k_size = int(config["Model.Retriever"]["prefetched_k_size"])
+            experiment_desc = f'open_book_{retriever_type}_{k_size}_topk_{top_k}' if retriever_type.lower() != 'none' else 'closed_book'
             qant = '_8bitq' if quantized else ''
             experiment_desc =experiment_desc + f'_{hf_model_name}{qant}_max_gen_{max_gen}'
         elif model_type == 'replug':
@@ -22,8 +23,9 @@ class StoreResult:
             top_k = config["Model.Retriever"]["retriever_top_k"]
             quantized = config["Model"]["hf_llm_load_in_8bit"].lower() == 'true'
             max_gen = config["Model"]["hf_max_tokens_to_generate"]
+            k_size = int(config["Model.Retriever"]["prefetched_k_size"])
             qant = '_8bitq' if quantized else ''
-            experiment_desc = f'open_book_{retriever_type}_topk_{top_k}'
+            experiment_desc = f'open_book_{retriever_type}_{k_size}_topk_{top_k}'
             experiment_desc =experiment_desc + f'_{hf_model_name}{qant}_max_gen_{max_gen}'
         else:
             experiment_desc = (config['Experiment']['name']).replace(' ', '_').lower()
