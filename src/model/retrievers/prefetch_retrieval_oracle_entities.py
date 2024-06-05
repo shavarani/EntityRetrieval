@@ -105,6 +105,7 @@ class FetchOracleEntityRetrievalDocuments:
         entity_annotations = record.entity_annotations
         answer_aliases = record.answer_aliases
         for line_no, entity in enumerate(entity_annotations):
+            entity = entity.replace(' ', '_')
             if entity in considered_entities:
                 continue
             considered_entities.add(entity)
@@ -112,15 +113,23 @@ class FetchOracleEntityRetrievalDocuments:
                 print(f'{entity} not in the fetched articles, You may need to refine your wikipedia_articles file to contain this entity.')
                 self.missing_entities.add(entity)
             wikipedia_txt = self.get_wikipedia_article(entity)
-            title = entity.replace("_", " ")
-            passage = title + "\n" + " ".join(wikipedia_txt.split()[:self.retriever_max_w])
-            results.append({'id': line_no,'rank': line_no + 1, 'title': title, 'text': passage, 'score': str(1.0), 'has_answer': text_has_answer(answer_aliases, passage)})
+            if wikipedia_txt:
+                title = entity.replace("_", " ")
+                passage = title + "\n" + " ".join(wikipedia_txt.split()[:self.retriever_max_w])
+                results.append({'id': line_no,'rank': line_no + 1, 'title': title, 'text': passage, 'score': str(1.0), 'has_answer': text_has_answer(answer_aliases, passage)})
         return results
 
 if __name__ == '__main__':
     cfg = parse_args()
     dataset = get_dataset(cfg)
     retriever = FetchOracleEntityRetrievalDocuments(cfg)
+    successful_fetch = 0.0
+    all_fetch = 0.0
     with jsonlines.open(cfg['Experiment']['output_file'], mode='w') as writer:
         for e in tqdm(dataset):
-            writer.write({"question": e.question, "context": retriever.fetch_documents(e)})
+            all_fetch += 1.0
+            ctxt = retriever.fetch_documents(e)
+            if ctxt:
+                successful_fetch += 1.0
+            writer.write({"question": e.question, "context": ctxt})
+    print(f"Successful fetch percentage: {successful_fetch * 100/all_fetch:.2f}% ({int(successful_fetch)}/{int(all_fetch)})")

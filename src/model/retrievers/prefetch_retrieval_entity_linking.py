@@ -90,9 +90,10 @@ class FetchEntityRetrievalDocuments:
             entity = x['annotation']
             considered_entities.add(entity)
             wikipedia_txt = self.lookup_index.get_wikipedia_article(x['annotation'])
-            title = entity.replace("_", " ")
-            passage = title + "\n" + " ".join(wikipedia_txt.split()[:self.retriever_max_w])
-            results.append({'id': line_no,'rank': line_no + 1, 'title': title, 'text': passage, 'score': str(1.0), 'has_answer': text_has_answer(answer_aliases, passage)})
+            if wikipedia_txt:
+                title = entity.replace("_", " ")
+                passage = title + "\n" + " ".join(wikipedia_txt.split()[:self.retriever_max_w])
+                results.append({'id': line_no,'rank': line_no + 1, 'title': title, 'text': passage, 'score': str(1.0), 'has_answer': text_has_answer(answer_aliases, passage)})
         return results
 
 if __name__ == '__main__':
