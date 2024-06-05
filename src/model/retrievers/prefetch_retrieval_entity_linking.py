@@ -1,29 +1,18 @@
 """
-This is a standalone script that uses pre-built pyserini (https://github.com/castorini/pyserini) indexes to fetch and
- store top-k retrieval documents for each question in a defined dataset.
+This is a standalone script that uses pre-trained entity linking models to find the entities in the questions, and
+ then uses a pre-built entity identifier to article to fetch the first k words in the fetched articles.
 
-Extra documentation can be looked-up from pyserini/docs/prebuilt-indexes.md
-    - Standard Lucene Indexes (for sparse retrieval)
-        wikipedia-dpr-100w
-    - Faiss Indexes
-        wikipedia-dpr-100w.dpr-multi
-        wikipedia-dpr-100w.dpr-single-nq
-        wikipedia-dpr-100w.bpr-single-nq
-        wikipedia-dpr-100w.ance-multi
-        wikipedia-dpr-100w.dkrr-nq
-        wikipedia-dpr-100w.dkrr-tqa
 """
 import os
 import re
 import string
-import json
 import argparse
 import configparser
 import pathlib
 import jsonlines
 from tqdm import tqdm
 import sys
-import os
+
 sys.path.insert(0, os.path.abspath('../../model/entity_linking/'))
 
 from data.loader import get_dataset
