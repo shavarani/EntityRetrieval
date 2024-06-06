@@ -21,7 +21,15 @@ from data.loaders.utils import download_public_file, DatasetSplit
 #  wikipedia articles of the salient entities in questions which have either been gold annotated (oracle) or identified
 #   using spel entity linking method (spel).
 PREPROCESSED_URLS = {
-    "FACTOIDQA_oracle_varying.zip":"EaFkI0ecTM1As54ocMo5BFEBLBRsa7k1iWdQc3bpcrgEKA?e=afVrfM",
+    "FACTOIDQA_oracle_50.zip":      "EUV2sT0McYhLrVLLLPbeXwgBMaJ2TJrm2YL_bWAQSNHWPA?e=VNgMcr",
+    "FACTOIDQA_oracle_100.zip":     "EfGtw4xlNktOt3RE8ZdPQbwBMgYN3_IAbZS4xZ4gR8qU8g?e=5WMahf",
+    "FACTOIDQA_oracle_300.zip":     "EX7Txju8q3hBk59yYITKqg0BbM_CwSJ-YHXRsF0-K8_i1g?e=ucRniv",
+    "FACTOIDQA_oracle_1000.zip":    "EecPCqrIDexCknetJ8MADeEBIYk6t7o6bz2naTiviXSxsQ?e=eUjHPx",
+
+    "EntityQuestions_oracle_50.zip":  "EbuHsEnOOZFPlzQ2HxviAi4B84MNdnNkta5WiKTmzhRmAA?e=OzM6et",
+    "EntityQuestions_oracle_100.zip": "EZWvKOFULzREpmsYsFt3Fd4B9NpUSkPeHTvHmiSYNpD0XA?e=DrIwGi",
+    "EntityQuestions_oracle_300.zip": "ESfSkv6uOXlKjGok-EcNxtcBIdi50V14KQM5YzU9yti9jw?e=NsG3ID",
+    "EntityQuestions_oracle_1000.zip":"EcYl2M6M-2dKm-OnE8Jn2cYBObsZIkRzMCSSF-_RBaVzPA?e=EnhYKM",
 
     "FACTOIDQA_spel_1000.zip":      "EfdJnq020bJFrdBWX1wackIBA3pSfDgmrCByzQT4zcViNA?e=6crgde",
     "STRATEGYQA_spel_1000.zip":     "EWgyN1g6jBxLk56KwecT_JABgF7RvUgiMlG7OWFk8t_u4g?e=8jVAm2",
