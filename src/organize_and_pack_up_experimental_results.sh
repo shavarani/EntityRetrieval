@@ -64,74 +64,74 @@ for file in *.jsonl; do
         new_dir="Closed-Book"
         mkdir -p "$new_dir"
         new_file="${file#dev_hfllm_closed_book_}"
-        mv "$file" "$new_dir/train_filtered_${new_file/_max_gen_10/}"
+        mv "$file" "$new_dir/train_filtered_${new_file/_max_gen_1/}"
     fi
     if [[ $file == train_hfllm_closed_book_* ]]; then
         new_dir="Closed-Book"
         mkdir -p "$new_dir"
         new_file="${file#train_hfllm_closed_book_}"
-        mv "$file" "$new_dir/train_${new_file/_max_gen_10/}"
+        mv "$file" "$new_dir/train_${new_file/_max_gen_1/}"
     fi
     if [[ $file == dev_hfllm_open_book_ANCE_100_topk_${topk}_* ]]; then
         new_dir="ANCE"
         mkdir -p "$new_dir"
         new_file="${file#dev_hfllm_open_book_ANCE_100_topk_${topk}_}"
-        mv "$file" "$new_dir/train_filtered_${new_file/_max_gen_10/}"
+        mv "$file" "$new_dir/train_filtered_${new_file/_max_gen_1/}"
     fi
     if [[ $file == train_hfllm_open_book_ANCE_100_topk_${topk}_* ]]; then
         new_dir="ANCE"
         mkdir -p "$new_dir"
         new_file="${file#train_hfllm_open_book_ANCE_100_topk_${topk}_}"
-        mv "$file" "$new_dir/train_${new_file/_max_gen_10/}"
+        mv "$file" "$new_dir/train_${new_file/_max_gen_1/}"
     fi
     if [[ $file == dev_hfllm_open_book_BM25_100_topk_${topk}_* ]]; then
         new_dir="BM25"
         mkdir -p "$new_dir"
         new_file="${file#dev_hfllm_open_book_BM25_100_topk_${topk}_}"
-        mv "$file" "$new_dir/train_filtered_${new_file/_max_gen_10/}"
+        mv "$file" "$new_dir/train_filtered_${new_file/_max_gen_1/}"
     fi
     if [[ $file == train_hfllm_open_book_BM25_100_topk_${topk}_* ]]; then
         new_dir="BM25"
         mkdir -p "$new_dir"
         new_file="${file#train_hfllm_open_book_BM25_100_topk_${topk}_}"
-        mv "$file" "$new_dir/train_${new_file/_max_gen_10/}"
+        mv "$file" "$new_dir/train_${new_file/_max_gen_1/}"
     fi
     if [[ $file == dev_hfllm_open_book_DPR_100_topk_${topk}_* ]]; then
         new_dir="DPR"
         mkdir -p "$new_dir"
         new_file="${file#dev_hfllm_open_book_DPR_100_topk_${topk}_}"
-        mv "$file" "$new_dir/train_filtered_${new_file/_max_gen_10/}"
+        mv "$file" "$new_dir/train_filtered_${new_file/_max_gen_1/}"
     fi
     if [[ $file == train_hfllm_open_book_DPR_100_topk_${topk}_* ]]; then
         new_dir="DPR"
         mkdir -p "$new_dir"
         new_file="${file#train_hfllm_open_book_DPR_100_topk_${topk}_}"
-        mv "$file" "$new_dir/train_${new_file/_max_gen_10/}"
+        mv "$file" "$new_dir/train_${new_file/_max_gen_1/}"
     fi
     for n in 50 100 300 1000; do
         if [[ $file == dev_hfllm_open_book_Oracle_${n}_topk_${topk}_* ]]; then
             new_dir="Oracle${n}"
             mkdir -p "$new_dir"
             new_file="${file#dev_hfllm_open_book_Oracle_${n}_topk_${topk}_}"
-            mv "$file" "$new_dir/train_filtered_${new_file/_max_gen_10/}"
+            mv "$file" "$new_dir/train_filtered_${new_file/_max_gen_1/}"
         fi
         if [[ $file == dev_hfllm_open_book_SpEL_${n}_topk_${topk}_* ]]; then
             new_dir="SpEL${n}"
             mkdir -p "$new_dir"
             new_file="${file#dev_hfllm_open_book_SpEL_${n}_topk_${topk}_}"
-            mv "$file" "$new_dir/train_filtered_${new_file/_max_gen_10/}"
+            mv "$file" "$new_dir/train_filtered_${new_file/_max_gen_1/}"
         fi
         if [[ $file == train_hfllm_open_book_Oracle_${n}_topk_${topk}_* ]]; then
             new_dir="Oracle${n}"
             mkdir -p "$new_dir"
             new_file="${file#train_hfllm_open_book_Oracle_${n}_topk_${topk}_}"
-            mv "$file" "$new_dir/train_${new_file/_max_gen_10/}"
+            mv "$file" "$new_dir/train_${new_file/_max_gen_1/}"
         fi
         if [[ $file == train_hfllm_open_book_SpEL_${n}_topk_${topk}_* ]]; then
             new_dir="SpEL${n}"
             mkdir -p "$new_dir"
             new_file="${file#train_hfllm_open_book_SpEL_${n}_topk_${topk}_}"
-            mv "$file" "$new_dir/train_${new_file/_max_gen_10/}"
+            mv "$file" "$new_dir/train_${new_file/_max_gen_1/}"
         fi
     done
 done
