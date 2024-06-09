@@ -9,7 +9,7 @@ from tqdm import tqdm
 import numpy as np
 from data.loader import get_dataset
 from data.store import StoreResult
-from model.loader import get_llm
+from model.models.loader import get_llm
 from eval import QAEvaluate, EvaluationMetrics
 
 sys.path.append("src")

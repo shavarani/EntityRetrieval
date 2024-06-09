@@ -2,7 +2,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig
 import torch
 
 from model.utils import LLMModel
-from model.loader import get_retriever
+from model.retrievers.loader import get_retriever
 from data.loader import qa_prompt_with_instructions
 
 device = "cuda" if torch.cuda.is_available() else "cpu"

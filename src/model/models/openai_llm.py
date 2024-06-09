@@ -4,7 +4,7 @@ import backoff
 import logging
 
 from model.utils import LLMModel
-from model.loader import get_retriever
+from model.retrievers.loader import get_retriever
 from data.loader import qa_prompt_with_instructions
 
 GPT_MODEL_NAME = "gpt-4-0613"

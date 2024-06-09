@@ -19,7 +19,7 @@ from haystack.nodes.ranker import SentenceTransformersRanker
 
 from model.utils import LLMModel
 from model.models.replug.utils import ReplugHFLocalInvocationLayer
-from model.loader import get_retriever
+from model.retrievers.loader import get_retriever
 
 def remove_template_params(self, kwargs: Dict[str, Any]) -> Dict[str, Any]:
     return kwargs
