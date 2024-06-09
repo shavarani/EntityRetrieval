@@ -5,9 +5,13 @@ import json
 from sklearn.metrics import accuracy_score
 
 from eval import EvaluationMetrics
-setting_names = ['Closed-Book','DPR','RePLUG','EntityRetrieval-Oracle','EntityRetrieval-SpEL']
-model_names = ['Llama-2-7b-hf','Llama-2-13b-hf','Llama-2-70b-hf_8bQ']
-dataset = "FactoidQA"
+#setting_names = ['Closed-Book','DPR','RePLUG','EntityRetrieval-Oracle','EntityRetrieval-SpEL']
+#model_names = ['Llama-2-7b-hf','Llama-2-13b-hf','Llama-2-70b-hf_8bQ']
+#dataset = "FactoidQA"
+
+def extract_entity_questions_answer(model_answer):
+    model_answer = model_answer.strip().lower()
+    return model_answer
 
 def extract_strategy_qa_answer(model_answer):
     model_answer = model_answer.strip().lower()
@@ -29,7 +33,7 @@ def extract_factoid_qa_answer(model_answer):
         model_answer = 'N/A'
     return model_answer
 
-def evaluate(filepath, split):
+def evaluate(filepath, dataset, split):
     cfg = configparser.ConfigParser()
     cfg.read_dict({'Evaluate': {'evaluate_rouge': False, 'evaluate_bem': False}})
     metrics = EvaluationMetrics(cfg, dataset, split)
@@ -47,50 +51,67 @@ def evaluate(filepath, split):
                 model_answer = extract_factoid_qa_answer(annotated_record['predicted_answer'])
                 metrics.add_open_domain_prediction(
                     annotated_record['question'], annotated_record['answer_aliases'], model_answer)
+            elif dataset == 'EntityQuestions':
+                if 'answer_aliases' not in annotated_record or not annotated_record['answer_aliases'] or \
+                        annotated_record['answer_aliases'] == 'None':
+                    continue
+                model_answer = extract_entity_questions_answer(annotated_record['predicted_answer'])
+                metrics.add_open_domain_prediction(
+                    annotated_record['question'], annotated_record['answer_aliases'], model_answer)
             else:
                 raise ValueError(f"Answer extractor undefined for: {filepath}")
         if dataset == 'StrategyQA':
             accuracy = accuracy_score(metrics.expected_answers, metrics.model_answers)
             invalid_count = metrics.model_answers.count('Wrong!')
             return {'accuracy': accuracy, 'invalid_count': invalid_count, 'exact_match': 'N/A', 'f1': 'N/A'}
-        elif dataset == 'FactoidQA':
+        elif dataset in ['FactoidQA', 'EntityQuestions']:
             exact_match = np.mean([x['em'] for x in metrics.open_domain_predictions])
             f1 = np.mean([x['f1'] for x in metrics.open_domain_predictions])
             return {'accuracy': 'N/A', 'invalid_count': 'N/A', 'exact_match': exact_match, 'f1': f1}
-beginnig = """\\begin{table*}
+beginnig = """\\begin{table}
 \t\centering
-\t\\begin{tabular}{l|cc|cc|cc|cc}
-\t\\multicolumn{1}{c|}{~}                                                                   & \\multicolumn{6}{c|}{LLaMA 2\\textsuperscript{$\\star$}} & \\multicolumn{2}{c}{\\multirow{2}{*}{GPT 4\\textsuperscript{$	\\ddagger$}}}\\\\\\cmidrule{2-7}
-\t\\multicolumn{1}{c|}{Setting}                                                             & \\multicolumn{2}{c|}{7B} & \\multicolumn{2}{c|}{13B} & \\multicolumn{2}{c|}{70B-8bQ} & \\\\\\cmidrule{2-9}
-\t\\multicolumn{1}{c|}{~}                                                                   &  EM  &  F1  &  EM  &  F1  &  EM  &  F1  &  EM  &  F1   \\\\\\midrule
+\t\setlength{\\tabcolsep}{2.5pt}
+\t\\begin{tabular}{l|cc|cc|cc}
+\t\\toprule
+\t\\multicolumn{1}{c|}{\\multirow{3}{*}{\\begin{tabular}[c]{@{}c@{}}\\textbf{LLaMA3} \\\\ \\textbf{(8B)}\\end{tabular}}} & \\multicolumn{2}{c|}{\\multirow{2}{*}{\\textbf{FactoidQA}}} & \\multicolumn{4}{c}{\\textbf{EntityQuestions}}                    \\\\ \\cmidrule{4-7} 
+\t\\multicolumn{1}{c|}{}                             & \\multicolumn{2}{c|}{}                           & \\multicolumn{2}{c|}{\\textbf{dev}}     & \\multicolumn{2}{c}{\\textbf{test}} \\\\ \\cmidrule{2-7} 
+\t\\multicolumn{1}{c|}{}                             & \\textbf{EM}           & \\multicolumn{1}{c|}{\\textbf{F1}}          & \\textbf{EM} & \\multicolumn{1}{c|}{\\textbf{F1}} & \\textbf{EM}          & \\textbf{F1}         \\\\ \\midrule
 """
 
-endig= """                                                   \\bottomrule
+endig= """\t\\bottomrule
 \t\\end{tabular}
-\t\\caption{FactoidQA evaluation results. EM refers to the exact match between predicted and expected answers, disregarding punctuation and articles (\\texttt{a}, \\texttt{an}, \\texttt{the}). \\textsuperscript{$\\dagger$}\\textit{Entity Retrieval} with oracle results are not directly comparable to other approaches, as they leverage gold annotated entity links from the dataset. \\textsuperscript{$\\ddagger$}GPT experiments cost \\$207.4 USD. \\textsuperscript{$\\star$} Results represent the average of three runs, accompanied by a margin of error based on a 95\\% confidence interval.}
-\t\\label{tab:factoidqa_evaluation_results}
-\t\\vspace{-0.3cm}
-\\end{table*}
+\t\\caption{Question answering efficacy comparison between Closed-book and Retrieval-augmentation using BM25, DPR, ANCE, and \\textit{Entity Retrieval}. EM refers to the exact match between predicted and expected answers, disregarding punctuation and articles (\\texttt{a}, \\texttt{an}, \\texttt{the}).}
+\t\\label{tab:llama_3_8b_raqa_results_new}
+\\end{table}
 """
 model_convertions = {
     'Closed-Book':'Closed-book',
     'DPR': 'DPR',
-    'RePLUG': '\\textsc{RePlug}',
-    'EntityRetrieval-Oracle': '\\textit{Entity Retrieval}  w/ \\textsc{SpEL}',
-    'EntityRetrieval-SpEL': '\\textit{Entity Retrieval} w/ oracle entities\\textsuperscript{$\\dagger$}'
+    'BM25': 'BM25',
+    'ANCE': 'ANCE',
+    'SpEL50': 'ERSp50w',
+    'SpEL100': 'ERSp100w',
+    'SpEL300': 'ERSp300w',
+    'SpEL1000': 'ERSp1000w',
+    'Oracle50': 'ER50w',
+    'Oracle100': 'ER100w',
+    'Oracle300': 'ER300w',
+    'Oracle1000': 'ER1000w',
 }
 print(beginnig)
-for split in ['dev']:
-    for setting_name in setting_names:
-        printing_line  = "                                                    " + model_convertions[setting_name]
-        for model_name in model_names:
-            if setting_name == 'RePLUG':
-                    model_name += '_zero_shot'
+for setting_name in ['Closed-Book', 'BM25', 'DPR', 'ANCE', 'Oracle50', 'Oracle100', 'Oracle300', 'Oracle1000', 'SpEL50', 'SpEL100', 'SpEL300', 'SpEL1000']:
+    printing_line  = "\t\\multicolumn{1}{l|}{" + model_convertions[setting_name] + "} "
+    for dataset, split in [('FactoidQA', 'train'), ('EntityQuestions', 'dev'), ('EntityQuestions', 'test')]:
+        for model_name in ['Meta-Llama-3-8B']:
             results = []
-            for experiment_id in range(1, 4):
-                address = f"results/{dataset}/{experiment_id}/{setting_name}/{model_name}.jsonl"
-                results.append(evaluate(address, split))
-            #print(f"Setting: {setting_name}, Model: {model_name}, Dataset: {dataset}, Split: {split}, Results:")
+            for experiment_id in range(1, 2):
+                if dataset == "FactoidQA":
+                    address = f"results/{dataset}/{experiment_id}/{setting_name}/{model_name}.jsonl"
+                elif dataset == "EntityQuestions":
+                    address = f"results/{dataset}/{experiment_id}/{setting_name}/{split}_{model_name}.jsonl"
+                else:
+                    raise ValueError(f"dataset {dataset} not used in this Table!")
+                results.append(evaluate(address, dataset, split))
             if results[0]['f1'] != 'N/A':
                 f1_values = [result['f1'] * 100 for result in results]
                 average_f1 = np.mean(f1_values)
@@ -100,19 +121,16 @@ for split in ['dev']:
                 average_exact_match = np.mean(exact_match_values)
                 std_dev_exact_match = np.std(exact_match_values)
                 margin_of_error_exact_match = 2.576 * (std_dev_exact_match / np.sqrt(len(exact_match_values)))
-                printing_line += f" & {average_exact_match:.1f}$\\pm${margin_of_error_exact_match:.1f} & {average_f1:.1f}$\\pm${margin_of_error_f1:.1f} " 
-            if results[0]['accuracy'] != 'N/A':
-                accuracy_values = [result['accuracy'] for result in results]
-                average_accuracy = np.mean(accuracy_values)
-                std_dev_accuracy = np.std(accuracy_values)
-                margin_of_error_accuracy = 2.576 * (std_dev_accuracy / np.sqrt(len(accuracy_values)))
-                print(f"Accuracy: {average_accuracy:.2f}±{margin_of_error_accuracy:.2f}")
-            if results[0]['invalid_count'] != 'N/A':
-                invalid_count_values = [result['invalid_count'] for result in results]
-                average_invalid_count = np.mean(invalid_count_values)
-                std_dev_invalid_count = np.std(invalid_count_values)
-                margin_of_error_invalid_count = 2.576 * (std_dev_invalid_count / np.sqrt(len(invalid_count_values)))
-                print(f"Invalid Count: {average_invalid_count:.2f}±{margin_of_error_invalid_count:.2f}")
-        printing_line += " & - & - \\\\"
-        print(printing_line)
+                if margin_of_error_exact_match > 0.0 or margin_of_error_f1 > 0.0:
+                    printing_line += f" & {average_exact_match:.1f}$\\pm${margin_of_error_exact_match:.1f} & {average_f1:.1f}$\\pm${margin_of_error_f1:.1f} "
+                else:
+                    printing_line += f" & {average_exact_match:.1f} & {average_f1:.1f} "
+    printing_line += "\\\\"
+    if setting_name == 'Closed-Book':
+        printing_line += "\\midrule\n\t\\multicolumn{7}{c}{Retrieval-Augmented QA} \\\\ \\midrule"
+    if setting_name == 'ANCE':
+        printing_line += "\\midrule\n\t\\multicolumn{7}{c}{\\textit{Entity Retrieval} w/ Question Entity Annotations} \\\\ \\midrule"
+    if setting_name == 'Oracle1000':
+        printing_line += "\\midrule\n\t\\multicolumn{7}{c}{\\textit{Entity Retrieval} w/ \\textsc{SpEL} Entity Annotations} \\\\ \\midrule"
+    print(printing_line)
 print(endig)
