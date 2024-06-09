@@ -19,7 +19,7 @@ def read_configs_from_args(args):
     default_config = {
         'Dataset': {'name': 'FACTOIDQA', 'split': 'dev'}, 
         'Model': {'name': 'HFLLM', 'hf_model_name': 'TinyLlama/TinyLlama-1.1B-step-50K-105b', 'hf_max_tokens_to_generate': '10', 'hf_llm_load_in_8bit': 'False'}, 
-        'Model.Retriever': {'type': 'none', 'retriever_top_k': '4', 'prefetched_k_size': '100', 'load_in_memory': False, 'max_w': 100},
+        'Model.Retriever': {'type': 'none', 'retriever_top_k': '4', 'prefetched_k_size': '100', 'load_in_memory': False, 'max_w': 100, 'realtime_retrieve': False},
         'Experiment': {'name': 'experiment description', 'summarize_results': 'False', 'verbose_logging': 'False', 'perform_annotation': 'False'}, 
         'Evaluate': {'experimental_results_path': '../results/Table1/', 'evaluate_rouge': 'False', 'evaluate_bem': 'False', 'perform_evaluation': 'True'}
         }
@@ -47,6 +47,8 @@ def read_configs_from_args(args):
                 config['Model.Retriever']['prefetched_k_size'] = value
             elif key == 'retriever-load-in-memory':
                 config['Model.Retriever']['load_in_memory'] = value
+            elif key == 'retriever-realtime-retrieve':
+                config['Model.Retriever']['realtime_retrieve'] = value
             elif key == 'max-w':
                 config['Model.Retriever']['max_w'] = value
             elif key == 'experiment-name':
