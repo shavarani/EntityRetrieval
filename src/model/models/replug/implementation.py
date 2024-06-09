@@ -19,8 +19,7 @@ from haystack.nodes.ranker import SentenceTransformersRanker
 
 from model.utils import LLMModel
 from model.models.replug.utils import ReplugHFLocalInvocationLayer
-from model.retrievers.prefetched_retrieve import PrefetchedDocumentRetriever
-from model.retrievers.fast_prefetched_retrieve import FastPrefetchedDocumentRetriever
+from model.loader import get_retriever
 
 def remove_template_params(self, kwargs: Dict[str, Any]) -> Dict[str, Any]:
     return kwargs
@@ -34,12 +33,9 @@ class RePLUG(LLMModel):
         self.cache_dir = f"{self.checkpoint_path}/hf"
         self.retriever_top_k = int(config["Model.Retriever"]["retriever_top_k"])
         self.reranker_top_k = reranker_top_k
-        retriever_load_in_memory = config['Model.Retriever']['load_in_memory'].lower() == 'true'
         load_in_8bit = config["Model"]["hf_llm_load_in_8bit"].lower() == 'true'
-        if retriever_load_in_memory:
-            self.retriever = FastPrefetchedDocumentRetriever(config, topk=self.retriever_top_k)
-        else:
-            self.retriever = PrefetchedDocumentRetriever(config)
+        self.retriever = get_retriever(config)
+        assert self.retriever is not None, "RePLUG does not run in Closed-Book mode!"
         if rerank_retrieved:
             sbert_path = "cross-encoder/ms-marco-MiniLM-L-6-v2"
             self.reranker = SentenceTransformersRanker(batch_size=32, model_name_or_path=sbert_path, top_k=1,
