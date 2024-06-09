@@ -16,7 +16,7 @@ important functions to be implemented are `__iter__` and `__next__`. The `__next
 `data.loaders.utils.QARecord`. Once implemented add the new dataset to `data.loader.get_dataset` and you should be 
 able to run all the experiments with the new dataset flawlessly.
 
-#### Creation of the selected EntityQuestions dataset
+#### Creation of the EntityQuestions dataset
 We have used the following script to create the selected EntityQuestions dataset which we have used in the paper:
 
 ```python
@@ -53,4 +53,11 @@ of main memory and about the same amount of available disk storage to download a
 For entity retrieval prefetched documents, you may follow the same procedure using [`prefetch_entity_retrieval_documents.sh`](src/prefetch_entity_retrieval_documents.sh). 
 Please remember to instantiate the entity linker directory using `git submodule update --init --recursive` before running this script.
 
-You may use run [`analyze_prefetched_documents.py`](src/model/retrievers/analyze_prefetched_documents.py) to create retrieval coverage analysis plots.
+### Replicating the Results Tables and Figures
+You can run [`analyze_prefetched_documents.py`](src/model/retrievers/analyze_prefetched_documents.py) to reproduce retrieval 
+coverage analysis results using which you can recreate Figures 3 and 4 and Table 1.
+
+As well, the results of Tables 2 and 3 can be replicated using [`run_llama_raqa_experiments.sh`](src/run_llama_raqa_experiments.sh), 
+and the realtime efficiency experiments of Table 4 can be replicated using [`run_realtime_raqa_experiments.sh`](src/run_realtime_raqa_experiments.sh).
+Once your script finishes, you may use [`organize_and_pack_up_experimental_results.sh`](src/organize_and_pack_up_experimental_results.sh) 
+to organize the created result files into proper folders.
