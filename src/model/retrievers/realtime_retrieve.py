@@ -9,7 +9,10 @@ from haystack.schema import FilterType
 
 from model.retrievers.prefetched_retrieve import RetrievedContext
 from model.retrievers.prefetch_retrieval_pyserini import PrefetchRetrievalDocuments
-from model.retrievers.prefetch_retrieval_entity_linking import FetchEntityRetrievalDocuments
+try:
+    from model.retrievers.prefetch_retrieval_entity_linking import FetchEntityRetrievalDocuments
+except Exception:
+    FetchEntityRetrievalDocuments = None
 
 
 class RealtimeDocumentRetriever(BaseRetriever):
