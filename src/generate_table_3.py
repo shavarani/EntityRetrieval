@@ -1,12 +1,9 @@
-from tqdm import tqdm
 import numpy as np
 import configparser
 import json
 from sklearn.metrics import accuracy_score
 
 from eval import EvaluationMetrics
-setting_names = ['Closed-Book','DPR','RePLUG','EntityRetrieval-SpEL']
-model_names = ['Llama-2-7b-hf','Llama-2-13b-hf','Llama-2-70b-hf_8bQ']
 dataset = "StrategyQA"
 
 def extract_strategy_qa_answer(model_answer):
@@ -58,52 +55,43 @@ def evaluate(filepath, split):
             f1 = np.mean([x['f1'] for x in metrics.open_domain_predictions])
             return {'accuracy': 'N/A', 'invalid_count': 'N/A', 'exact_match': exact_match, 'f1': f1}
 beginnig = """\\begin{table}
-\\adjustbox{max width=\columnwidth}{
-\t\centering
-\t\\addtolength{\\tabcolsep}{-0.25em}
-\t\\renewcommand{\\arraystretch}{1.1}
-\t\\begin{tabular}{c|l|ll|ll|ll}
-\t\t\\multicolumn{2}{c|}{\\multirow{2}{*}{Setting}}                   & \\multicolumn{2}{c|}{7B} & \\multicolumn{2}{c|}{13B} & \\multicolumn{2}{c}{70B-8bQ}\\\\\\cmidrule{3-8}
-\t\t\\multicolumn{1}{c}{~}                     &                                                  &  \\multicolumn{1}{c}{Acc}   & \\multicolumn{1}{c|}{Inv \\#} &  \\multicolumn{1}{c}{Acc}   & \\multicolumn{1}{c|}{Inv \\#} &  \\multicolumn{1}{c}{Acc}   & \\multicolumn{1}{c}{Inv \#} \\\\
+\t\\centering
+\t\\begin{tabular}{l|ll|ll}
+\t\\toprule
+\t\\multicolumn{1}{c|}{\\multirow{3}{*}{\\begin{tabular}[c]{@{}c@{}}\\textbf{LLaMA3} \\\\ \\textbf{(8B)}\\end{tabular}}} & \\multicolumn{2}{c|}{\\textbf{train}}                            & \\multicolumn{2}{c}{\\textbf{train\\_filtered}}                  \\\\ \\cmidrule{2-5} 
+\t\\multicolumn{1}{c|}{} & \\multicolumn{1}{c}{\\textbf{Acc.}} & \\multicolumn{1}{c|}{\\textbf{Inv \\#}} & \\multicolumn{1}{c}{\\textbf{Acc.}} & \\multicolumn{1}{c}{\\textbf{Inv \\#}} \\\\ \\midrule
 """
 
-endig= """                                                   \\bottomrule
+endig= """
+\t\\bottomrule
 \t\\end{tabular}
-}
-\t\\caption{StrategyQA evaluation with LLaMA 2 results.}
-\t\\label{tab:strategyqa_evaluation_results}  
-\t\\vspace{-0.3cm}
+\t\\caption{Comparison of \\textit{Entity Retrieval} using \\textsc{SpEL} identified entities to the best-performing dense and sparse retrieval methods of Table \\ref{tab:llama_3_8b_raqa_results} on the StrategyQA dataset. Given the expected boolean results for StrategyQA questions, we restricted LLaMA 3 to generate only one token. \\textit{Acc.} indicates the fraction of answers that correctly match the expected Yes or No responses in the dataset, while \\textit{Inv \\#} represents the count of labels that are neither Yes nor No, but another invalid answer.}
+\t\\label{tab:llama_3_8b_strategyqa_results_new}
 \\end{table}
 """
 model_convertions = {
-    'Closed-Book':'\\multirow{4}{*}{\\rotatebox{90}{}}           &Closed-book',
-    'DPR': '                                                 & DPR',
-    'RePLUG': '                                                 & \\textsc{RePlug}',
-    'EntityRetrieval-SpEL': '&\\begin{tabular}[l]{@{}l@{}}\\textit{Entity Retrieval}\\\\\\ \\ \\ \\ \\ \\ \\ \\  w/ \\textsc{SpEL} \\end{tabular}'
+    'Closed-Book':'Closed-book',
+    'DPR': 'DPR',
+    'BM25': 'BM25',
+    'ANCE': 'ANCE',
+    'SpEL50': 'ERSp50w',
+    'SpEL100': 'ERSp100w',
+    'SpEL300': 'ERSp300w',
+    'SpEL1000': 'ERSp1000w',
+    'Oracle50': 'ER50w',
+    'Oracle100': 'ER100w',
+    'Oracle300': 'ER300w',
+    'Oracle1000': 'ER1000w',
 }
 print(beginnig)
-for split in ['train_filtered']: # 'train',
-    print('\t\t\\midrule')
-    for setting_name in setting_names:
-        printing_line  = "                                                    " + model_convertions[setting_name]
-        for model_name in model_names:
-            if setting_name == 'RePLUG':
-                    model_name += '_zero_shot'
+for setting_name in ['BM25', 'ANCE', 'SpEL50', 'SpEL100', 'SpEL300', 'SpEL1000']:
+    printing_line  = "\t\\multicolumn{1}{l|}{" + model_convertions[setting_name] + "} "
+    for split in ['train', 'train_filtered']:
+        for model_name in ['Meta-Llama-3-8B']:
             results = []
-            for experiment_id in range(1, 4):
-                address = f"results/{dataset}/{experiment_id}/{setting_name}/{split}-{model_name}.jsonl"
+            for experiment_id in range(1, 2):
+                address = f"results/{dataset}/{experiment_id}/{setting_name}/{split}_{model_name}.jsonl"
                 results.append(evaluate(address, split))
-            #print(f"Setting: {setting_name}, Model: {model_name}, Dataset: {dataset}, Split: {split}, Results:")
-            if results[0]['f1'] != 'N/A':
-                f1_values = [result['f1'] * 100 for result in results]
-                average_f1 = np.mean(f1_values)
-                std_dev_f1 = np.std(f1_values)
-                margin_of_error_f1 = 2.576 * (std_dev_f1 / np.sqrt(len(f1_values)))
-                exact_match_values = [result['exact_match'] * 100 for result in results]
-                average_exact_match = np.mean(exact_match_values)
-                std_dev_exact_match = np.std(exact_match_values)
-                margin_of_error_exact_match = 2.576 * (std_dev_exact_match / np.sqrt(len(exact_match_values)))
-                printing_line += f" & {average_exact_match:.1f}$\\pm${margin_of_error_exact_match:.1f} & {average_f1:.1f}$\\pm${margin_of_error_f1:.1f} " 
             if results[0]['accuracy'] != 'N/A':
                 accuracy_values = [result['accuracy'] *100 for result in results]
                 average_accuracy = np.mean(accuracy_values)
@@ -113,7 +101,12 @@ for split in ['train_filtered']: # 'train',
                 average_invalid_count = np.mean(invalid_count_values)
                 std_dev_invalid_count = np.std(invalid_count_values)
                 margin_of_error_invalid_count = 2.576 * (std_dev_invalid_count / np.sqrt(len(invalid_count_values)))
-                printing_line += f" & {average_accuracy:.1f}$\\pm${margin_of_error_accuracy:.1f} & {int(average_invalid_count)}$\\pm${int(margin_of_error_invalid_count)} "
-        printing_line += " \\\\"
-        print(printing_line)
+                if margin_of_error_accuracy > 0.0 or margin_of_error_invalid_count > 0.0:
+                    printing_line += f" & {average_accuracy:.1f}$\\pm${margin_of_error_accuracy:.1f} & {int(average_invalid_count)}$\\pm${int(margin_of_error_invalid_count)} "
+                else:
+                    printing_line += f" & {average_accuracy:.1f} & {int(average_invalid_count)}"
+    printing_line += " \\\\"
+    if setting_name == "ANCE":
+        printing_line += "\\midrule"
+    print(printing_line)
 print(endig)
