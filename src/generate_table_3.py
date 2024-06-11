@@ -89,7 +89,7 @@ for setting_name in ['BM25', 'ANCE', 'SpEL50', 'SpEL100', 'SpEL300', 'SpEL1000']
     for split in ['train', 'train_filtered']:
         for model_name in ['Meta-Llama-3-8B']:
             results = []
-            for experiment_id in range(1, 2):
+            for experiment_id in range(1, 3):
                 address = f"results/{dataset}/{experiment_id}/{setting_name}/{split}_{model_name}.jsonl"
                 results.append(evaluate(address, split))
             if results[0]['accuracy'] != 'N/A':
