@@ -99,7 +99,7 @@ def parse_args():
 class PrefetchRetrievalDocuments:
     def __init__(self, config):
         super().__init__()
-        self.retriever_type = config["Model.Retriever"]["type"]
+        self.retriever_type = config["Model.Retriever"]["type"].lower()
         self.checkpoint_path = config["Experiment"]["checkpoint_path"]
         self.k = int(config['Model.Retriever']['retriever_top_k'])
         os.environ["PYSERINI_CACHE"] = self.checkpoint_path
