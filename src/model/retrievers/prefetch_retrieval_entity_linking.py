@@ -76,7 +76,7 @@ def instantiate_entity_linker(retriever_type):
 class FetchEntityRetrievalDocuments:
     def __init__(self, config):
         super().__init__()
-        self.retriever_type = config["Model.Retriever"]["type"]
+        self.retriever_type = config["Model.Retriever"]["type"].lower()
         self.retriever_max_w = int(config["Model.Retriever"]["max_w"])
         self.checkpoint_path = config["Experiment"]["checkpoint_path"]
         self.linker, self.lookup_index = instantiate_entity_linker(self.retriever_type)
