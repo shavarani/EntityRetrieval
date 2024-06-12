@@ -59,6 +59,11 @@ class QAEvaluate:
         self.results_path = config['Evaluate']['experimental_results_path']
         self.config = config
     @staticmethod
+    def extract_entity_questions_answer(model_answer):
+        model_answer = model_answer.strip().lower()
+        return model_answer
+
+    @staticmethod
     def extract_strategy_qa_answer(model_answer):
         model_answer = model_answer.strip().lower()
         if model_answer[:3] == 'yes':
@@ -103,6 +108,8 @@ class QAEvaluate:
                             model_answer = self.extract_strategy_qa_answer(annotated_record['predicted_answer'])
                         elif dataset == 'factoid_qa':
                             model_answer = self.extract_factoid_qa_answer(annotated_record['predicted_answer'])
+                        elif dataset == 'entity_questions':
+                            model_answer = self.extract_entity_questions_answer(annotated_record['predicted_answer'])
                         else:
                             raise ValueError(f"Answer extractor undefined for: {filename}")
                         correct_answers.setdefault(question, 0)
@@ -169,13 +176,20 @@ class QAEvaluate:
                             model_answer = self.extract_factoid_qa_answer(annotated_record['predicted_answer'])
                             results[dataset][split].add_open_domain_prediction(
                                 annotated_record['question'], annotated_record['answer_aliases'], model_answer)
+                        elif dataset == 'entity_questions':
+                            if 'answer_aliases' not in annotated_record or not annotated_record['answer_aliases'] or \
+                                    annotated_record['answer_aliases'] == 'None':
+                                continue
+                            model_answer = self.extract_entity_questions_answer(annotated_record['predicted_answer'])
+                            results[dataset][split].add_open_domain_prediction(
+                                annotated_record['question'], annotated_record['answer_aliases'], model_answer)
                         else:
                             raise ValueError(f"Answer extractor undefined for: {filename}")
             for dataset in results:
                 for split in results[dataset]:
                     if dataset == 'strategy_qa':
                         results[dataset][split].print_scores()
-                    elif dataset == 'factoid_qa':
+                    elif dataset in ['factoid_qa', 'entity_questions']:
                         results[dataset][split].print_open_domain_eval_results()
                     else:
                         raise ValueError(f"dataset: {dataset} undefined!")

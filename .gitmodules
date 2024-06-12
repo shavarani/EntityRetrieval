@@ -1,0 +1,3 @@
+[submodule "src/spel"]
+	path = src/spel
+	url = https://github.com/shavarani/SpEL.git

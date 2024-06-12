@@ -1,27 +1,23 @@
-experiments=('Closed-Book' 'DPR' 'EntityRetrieval-Oracle' 'EntityRetrieval-SpEL')
-datasets=('FACTOIDQA')
+experiments=('Closed-Book' 'Open-Book' 'RePLUG')
+retrievers=('None' 'DKRR' 'ANCE' 'DPR' 'BM25' 'Oracle' 'SpEL')
+datasets=('FACTOIDQA' 'EntityQuestions')
 splits=('dev')
+retriever_top_k=4
+max_tokens_to_generate=10
 for experiment in "${experiments[@]}"; do
-  for dataset in "${datasets[@]}"; do
-    for split in "${splits[@]}"; do
-        if [[ $experiment == "Closed-Book" ]]; then
-          use_retriever=False
-        else
-          use_retriever=True
-        fi
-        if [[ $experiment == "EntityRetrieval-SpEL" ]]; then
-          dpr_question_model="spel_wiki_first_100_words"
-        elif [[ $experiment == "EntityRetrieval-Oracle" ]]; then
-          dpr_question_model="oracle_wiki_first_100_words"
-        else
-          dpr_question_model="single-nq"
-        fi
-        if [[ $dataset == "STRATEGYQA" && $experiment == "EntityRetrieval-Oracle" ]]; then
-          continue
-        fi
+  for retriever_type in "${retrievers[@]}"; do
+    for dataset in "${datasets[@]}"; do
+      for split in "${splits[@]}"; do
+          if [[ $experiment == "Closed-Book" && $retriever_type != "None" ]]; then
+            continue
+          fi
+          if [[ $experiment != "Closed-Book" && $retriever_type == "None" ]]; then
+            continue
+          fi
 
-        python3.10 main.py dataset-name="${dataset}" dataset-split="${split}" model-type=OpenAI use-retriever="${use_retriever}" hf-max-tokens-to-generate=10 retriever-top-k=4 dpr-index-type=exact dpr-question-model="${dpr_question_model}" experiment-name="${experiment}" dpr-k-size=100 verbose-logging=False perform-annotation=True perform-evaluation=False
+          python3.10 main.py dataset-name="${dataset}" dataset-split="${split}" model-type=OpenAI retriever-type="${retriever_type}" hf-max-tokens-to-generate="${max_tokens_to_generate}" retriever-top-k="${retriever_top_k}" experiment-name="${experiment}-${retriever_type}" prefetched-k-size=100 verbose-logging=False perform-annotation=True perform-evaluation=False retriever-load-in-memory=True
 
+      done
     done
   done
 done

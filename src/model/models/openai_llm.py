@@ -4,7 +4,7 @@ import backoff
 import logging
 
 from model.utils import LLMModel
-from model.retrievers.preprocessed_dpr import PreprocessedDPRRetriever
+from model.retrievers.loader import get_retriever
 from data.loader import qa_prompt_with_instructions
 
 GPT_MODEL_NAME = "gpt-4-0613"
@@ -37,9 +37,10 @@ class GPTModel(LLMModel):
     def __init__(self, config):
         self.config = config
         self.checkpoint_path = self.config["Experiment"]["checkpoint_path"]
-        self.use_retriever = config["Model.Retriever"]["use_retriever"].lower() == 'true'
-        self._retriever = PreprocessedDPRRetriever(config) if self.use_retriever else None
+        self.retriever_type = config["Model.Retriever"]["type"]
+        self.use_retriever = self.retriever_type.lower() != 'none'
         self.top_k = int(config["Model.Retriever"]["retriever_top_k"]) if self.use_retriever else 0
+        self._retriever = get_retriever(config)
         self.max_tokens_to_generate=int(self.config["Model"]["hf_max_tokens_to_generate"])
 
     def _get_completion(self, prompt):

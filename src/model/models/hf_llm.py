@@ -1,8 +1,8 @@
 import torch
-from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, LlamaTokenizer
+from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer #, LlamaTokenizer
 
 from model.utils import LLMModel
-from model.retrievers.preprocessed_dpr import PreprocessedDPRRetriever
+from model.retrievers.loader import get_retriever
 from data.loader import get_prompt_provider
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -22,15 +22,14 @@ class HfLLMModel(LLMModel):
         load_in_8bit = config["Model"]["hf_llm_load_in_8bit"].lower() == 'true'
         self.model = AutoModelForCausalLM.from_pretrained(self.hf_model_name, cache_dir=self.cache_dir, load_in_8bit=load_in_8bit,
                                                           device_map="auto", low_cpu_mem_usage=True).eval()
-        if "llama" in self.hf_model_name:
-            self.tokenizer = LlamaTokenizer.from_pretrained(self.hf_model_name)
-        else:
-            self.tokenizer = AutoTokenizer.from_pretrained(self.hf_model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.hf_model_name)
 
         self.prompter = get_prompt_provider(config)
-        self.use_retriever = config["Model.Retriever"]["use_retriever"].lower() == 'true'
-        self._retriever = PreprocessedDPRRetriever(config) if self.use_retriever else None
+        self.retriever_type = config["Model.Retriever"]["type"]
+        self.use_retriever = self.retriever_type.lower() != 'none'
         self.top_k = int(config["Model.Retriever"]["retriever_top_k"]) if self.use_retriever else 0
+        self._retriever = get_retriever(config)
+
         print('*********** Loaded Configurations *****************')
         li8b = '(8-bit quantized)' if load_in_8bit else '(non-quantized)'
         print(f'* Loaded model name: {self.hf_model_name} {li8b}')
@@ -38,7 +37,7 @@ class HfLLMModel(LLMModel):
         print(f'* Loaded prompt provider: {self.prompter.__name__.upper()}')
         print(f"* {'Open' if self.use_retriever else 'Closed'}-book retrieval mode")
         if self.use_retriever:
-            print(f'* Open-book retrieval using top \"{self.top_k}\" DPR cached/fetched documents!')
+            print(f'* Open-book retrieval using {self.retriever_type} retriever with top \"{self.top_k}\" pre-fetched documents!')
         print('***************************************************')
 
     def _get_completion(self, prompt):

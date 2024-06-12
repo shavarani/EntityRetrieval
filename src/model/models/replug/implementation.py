@@ -1,5 +1,7 @@
 """
 Base code taken from https://github.com/IntelLabs/fastRAG/blob/main/examples/replug_parallel_reader.ipynb
+
+You may also look at the original implementation in https://github.com/swj0419/REPLUG
 """
 # pip install pydantic==1.10.14
 # pip install llama-cpp-python
@@ -17,7 +19,7 @@ from haystack.nodes.ranker import SentenceTransformersRanker
 
 from model.utils import LLMModel
 from model.models.replug.utils import ReplugHFLocalInvocationLayer
-from model.retrievers.preprocessed_dpr import PreprocessedDPRRetriever
+from model.retrievers.loader import get_retriever
 
 def remove_template_params(self, kwargs: Dict[str, Any]) -> Dict[str, Any]:
     return kwargs
@@ -32,8 +34,8 @@ class RePLUG(LLMModel):
         self.retriever_top_k = int(config["Model.Retriever"]["retriever_top_k"])
         self.reranker_top_k = reranker_top_k
         load_in_8bit = config["Model"]["hf_llm_load_in_8bit"].lower() == 'true'
-
-        self.retriever = PreprocessedDPRRetriever(self.config)
+        self.retriever = get_retriever(config)
+        assert self.retriever is not None, "RePLUG does not run in Closed-Book mode!"
         if rerank_retrieved:
             sbert_path = "cross-encoder/ms-marco-MiniLM-L-6-v2"
             self.reranker = SentenceTransformersRanker(batch_size=32, model_name_or_path=sbert_path, top_k=1,

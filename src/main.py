@@ -9,7 +9,7 @@ from tqdm import tqdm
 import numpy as np
 from data.loader import get_dataset
 from data.store import StoreResult
-from model.loader import get_llm
+from model.models.loader import get_llm
 from eval import QAEvaluate, EvaluationMetrics
 
 sys.path.append("src")
@@ -19,7 +19,7 @@ def read_configs_from_args(args):
     default_config = {
         'Dataset': {'name': 'FACTOIDQA', 'split': 'dev'}, 
         'Model': {'name': 'HFLLM', 'hf_model_name': 'TinyLlama/TinyLlama-1.1B-step-50K-105b', 'hf_max_tokens_to_generate': '10', 'hf_llm_load_in_8bit': 'False'}, 
-        'Model.Retriever': {'use_retriever': 'False', 'retriever_top_k': '4', 'dpr_index_type': 'exact', 'dpr_question_model': 'single-nq', 'dpr_k_size': '100'}, 
+        'Model.Retriever': {'type': 'none', 'retriever_top_k': '4', 'prefetched_k_size': '100', 'load_in_memory': False, 'max_w': 100, 'realtime_retrieve': False},
         'Experiment': {'name': 'experiment description', 'summarize_results': 'False', 'verbose_logging': 'False', 'perform_annotation': 'False'}, 
         'Evaluate': {'experimental_results_path': '../results/Table1/', 'evaluate_rouge': 'False', 'evaluate_bem': 'False', 'perform_evaluation': 'True'}
         }
@@ -39,16 +39,18 @@ def read_configs_from_args(args):
                 config['Model']['hf_max_tokens_to_generate'] = value
             elif key == 'hf-llm-load-in-8bit':
                 config['Model']['hf_llm_load_in_8bit'] = value
-            elif key == 'use-retriever':
-                config['Model.Retriever']['use_retriever'] = value
+            elif key == 'retriever-type':
+                config['Model.Retriever']['type'] = value
             elif key == 'retriever-top-k':
                 config['Model.Retriever']['retriever_top_k'] = value
-            elif key == 'dpr-index-type':
-                config['Model.Retriever']['dpr_index_type'] = value
-            elif key == 'dpr-question-model':
-                config['Model.Retriever']['dpr_question_model'] = value
-            elif key == 'dpr-k-size':
-                config['Model.Retriever']['dpr_k_size'] = value
+            elif key == 'prefetched-k-size':
+                config['Model.Retriever']['prefetched_k_size'] = value
+            elif key == 'retriever-load-in-memory':
+                config['Model.Retriever']['load_in_memory'] = value
+            elif key == 'retriever-realtime-retrieve':
+                config['Model.Retriever']['realtime_retrieve'] = value
+            elif key == 'max-w':
+                config['Model.Retriever']['max_w'] = value
             elif key == 'experiment-name':
                 config['Experiment']['name'] = value
             elif key == 'summarize-results':
