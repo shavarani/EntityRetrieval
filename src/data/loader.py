@@ -18,13 +18,13 @@ def get_dataset(config) -> QADataset:
 
 def ralm_qa_prompt(question, context: list=None) -> str:
     if not context or len(context) == 0:
-        ex_prompt = f"Answer these questions:\nQ: {question}\nA:"
+        ex_prompt = f"Answer this question:\nQ: {question}\nA:"
     elif len(context) == 1:
         ctx = context[0]
-        ex_prompt = f"{ctx}\n\nBased on this text, answer these questions:\nQ: {question}\nA:"
+        ex_prompt = f"{ctx}\n\nBased on this text, answer this question:\nQ: {question}\nA:"
     else:
         docs_text = "\n\n".join([f"{ctx}" for ctx in context])
-        ex_prompt = f"{docs_text}\n\nBased on these texts, answer these questions:\nQ: {question}\nA:"
+        ex_prompt = f"{docs_text}\n\nBased on these texts, answer this question:\nQ: {question}\nA:"
     return ex_prompt
 
 def get_prompt_provider(config) -> Callable[[str, Optional[str]], str]:
